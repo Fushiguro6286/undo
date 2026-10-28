@@ -61,9 +61,9 @@ export function createPayPalClient(opts: { clientId?: string; clientSecret?: str
     if (o.requestId) headers["PayPal-Request-Id"] = o.requestId;
     let body: BodyInit | undefined;
     if (o.form) body = o.form;
-    else if (o.body !== undefined) {
-      headers["Content-Type"] = "application/json";
-      body = JSON.stringify(o.body);
+    else {
+      headers["Content-Type"] = "application/json"; // PayPal returns 415 on body-less POSTs (capture, authorize) without it
+      if (o.body !== undefined) body = JSON.stringify(o.body);
     }
     const res = await fetch(`${base}${path}`, { method, headers, body });
     const text = await res.text();

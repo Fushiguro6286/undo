@@ -5,10 +5,10 @@ Run each with `npm run spike scripts/spikes/<file>.ts`. Every script prints `PAS
 | Spike | Script | Result | PayPal ids | Decision it forces |
 |---|---|---|---|---|
 | S1 OAuth (merchant + agent platform) | `s1-oauth.ts` | **PASS** (Oct 28) | merchant APP-1PM15472RS0135816 (disputes scope ✓), agent platform APP-49M125667T230682S (payouts scope ✓) | none. Payouts scope name is `https://uri.paypal.com/payments/payouts` |
-| S2 CONFIRMED + custom_id | `s2-confirmed.ts` | waiting for buyer approval | order 4GP18601L49641022 | |
+| S2 CONFIRMED + custom_id | `s2-confirmed.ts` | **PASS** (Oct 28) | order 4GP18601L49641022 COMPLETED, capture 2H875776GV391002M, item "Classic Tee, Sky Blue, M", custom_id = intent hash after capture | CONFIRMED checkout is live. Body-less POSTs (capture, authorize) need `Content-Type: application/json` or PayPal returns 415 (fixed in the client, with a test) |
 | S3 DELEGATED authorize → capture $29 of $35 | `s3-delegated.ts` | waiting for buyer approval | order 51L378204L562312B | DELEGATED live or simulated |
 | S4 refund idempotency | `s4-refund-idempotency.ts` | **PASS** (Oct 28) | capture 5L624410YE142664Y; both calls returned refund 22A59817TH8581016; refunds 0 → 1 | `PayPal-Request-Id` is a sufficient retry guard for refunds; keep `${claimId}:${action}:${version}` |
-| S5 tracking add/update | `s5-tracking.ts` | not run (needs S2) | | |
+| S5 tracking add/update | `s5-tracking.ts` | **PASS** (Oct 28) | order 4GP18601L49641022: tracker `…-UNDO1793211323536` patched then CANCELLED, `…-UNDO1793211331445B` SHIPPED | tracker id = `{captureId}-{trackingNumber}`; a wrong tracking number is fixed by cancel + re-add |
 | S6 payout from agent platform | `s6-payout.ts` | **PASS** (Oct 28) | batch V4TS9YYP47G42 SUCCESS; reused sender_batch_id → 400 USER_BUSINESS_ERROR | agent-fault payouts are live; use `sender_batch_id = ${claimId}:payout:${version}` as the duplicate guard |
 | S7 test-card capture, no buyer | `s7-card-capture.ts` | **PASS** (Oct 28) | order 41V33207CW8031431 created COMPLETED with intent CAPTURE, capture 5L624410YE142664Y | **order pool is funded by sandbox test card** (no hand approvals) |
 | S8 disputes sandbox flow | `s8-disputes.ts` | not run (needs a dispute) | | how disputes are demonstrated |

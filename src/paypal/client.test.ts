@@ -43,6 +43,16 @@ describe("request", () => {
     expect(headers["Content-Type"]).toBe("application/json");
   });
 
+  it("sends Content-Type JSON on body-less POSTs (PayPal 415s without it), but not on multipart", async () => {
+    const f = mockFetch((url) => (url.endsWith("/v1/oauth2/token") ? tokenResponse() : new Response("{}", { status: 201 })));
+    const c = client();
+    await c.request("POST", "/v2/checkout/orders/O1/capture", { requestId: "r1" });
+    await c.request("POST", "/v1/customer/disputes/D1/provide-evidence", { form: new FormData() });
+    const [capture, multipart] = f.mock.calls.slice(1).map(([, init]) => init.headers as Record<string, string>);
+    expect(capture["Content-Type"]).toBe("application/json");
+    expect(multipart["Content-Type"]).toBeUndefined();
+  });
+
   it("throws PayPalError with name, issues and debug id, never the token", async () => {
     mockFetch((url) =>
       url.endsWith("/v1/oauth2/token")
