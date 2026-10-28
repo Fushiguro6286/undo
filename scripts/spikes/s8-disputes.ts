@@ -40,7 +40,12 @@ await spike("S8", async () => {
   }
   if (can("provide-evidence")) {
     const form = new FormData();
-    const input = { evidences: [{ evidence_type: "OTHER", notes: "Undo spike S8: evidence pack (order, PayPal approval, intent hash, photo result, tracking).", documents: [{ name: "undo-evidence.pdf" }] }] };
+    // Send the type PayPal requested from the seller (e.g. PROOF_OF_FULFILLMENT for "not received"); OTHER is rejected there.
+    const type = d.evidences?.find((e: any) => e.source === "REQUESTED_FROM_SELLER")?.evidence_type ?? "OTHER";
+    const evidence: any = { evidence_type: type, notes: "Undo spike S8: evidence pack (order, PayPal approval, intent hash, photo result, tracking).", documents: [{ name: "undo-evidence.pdf" }] };
+    if (type === "PROOF_OF_FULFILLMENT") evidence.evidence_info = { tracking_info: [{ carrier_name: "OTHER", carrier_name_other: "Undo Test Carrier", tracking_number: `UNDO${Date.now()}` }] };
+    const input = { evidences: [evidence] };
+    console.log(`providing evidence type ${type}`);
     form.append("input", new Blob([JSON.stringify(input)], { type: "application/json" }));
     form.append("evidence-file", new Blob([PDF], { type: "application/pdf" }), "undo-evidence.pdf");
     await pp.request("POST", `/v1/customer/disputes/${id}/provide-evidence`, { form });
