@@ -51,9 +51,14 @@ export async function waitForApproval(client: PayPalClient, order: any, minutes 
   console.log(`\nOpen this link, log in as a sandbox BUYER, and approve:\n  ${link}\n(waiting up to ${minutes} min; after approving you may land on an error/example page, that's fine)`);
   const deadline = Date.now() + minutes * 60_000;
   while (Date.now() < deadline) {
-    const o = await client.request("GET", `/v2/checkout/orders/${order.id}`);
-    if (o.status === "APPROVED") return o;
-    process.stdout.write(".");
+    try {
+      const o = await client.request("GET", `/v2/checkout/orders/${order.id}`);
+      if (o.status === "APPROVED") return o;
+      process.stdout.write(".");
+    } catch (e) {
+      if (e instanceof PayPalError) throw e;
+      process.stdout.write("!"); // transient network error: keep polling
+    }
     await sleep(5000);
   }
   throw new Error(`order ${order.id} was not approved within ${minutes} min`);

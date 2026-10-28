@@ -1,11 +1,13 @@
 // S2: CONFIRMED order (items with size+color, custom_id = intent hash) -> buyer approves -> capture -> GET confirms custom_id.
-import { fail, merchant, pass, returnUrls, save, sha256, spike, usd, waitForApproval } from "./_lib";
+// Usage: npm run spike scripts/spikes/s2-confirmed.ts [--resume]   (--resume waits on the last created order)
+import { fail, load, merchant, pass, returnUrls, save, sha256, spike, usd, waitForApproval } from "./_lib";
 
 await spike("S2", async () => {
   const pp = merchant();
+  const pending = process.argv.includes("--resume") ? load("s2-pending") : undefined;
   const intent = { mode: "CONFIRMED", limits: { item: "tee", size: "M", color: "sky blue", max_price: "35.00" }, cart: [{ sku: "TEE-SKY-M", qty: 1 }], spike: Date.now() };
-  const hash = sha256(JSON.stringify(intent));
-  const order = await pp.request("POST", "/v2/checkout/orders", {
+  const hash: string = pending?.hash ?? sha256(JSON.stringify(intent));
+  const order = pending ? await pp.request("GET", `/v2/checkout/orders/${pending.orderId}`) : await pp.request("POST", "/v2/checkout/orders", {
     requestId: `spike-s2-create-${hash.slice(0, 16)}`,
     body: {
       intent: "CAPTURE",
@@ -20,8 +22,9 @@ await spike("S2", async () => {
       payment_source: { paypal: { experience_context: { brand_name: "Fernleaf Goods (Undo demo)", user_action: "PAY_NOW", ...returnUrls() } } },
     },
   });
-  console.log("created order", order.id, order.status);
-  await waitForApproval(pp, order);
+  save("s2-pending", { orderId: order.id, hash });
+  console.log(pending ? "resuming order" : "created order", order.id, order.status);
+  if (order.status !== "APPROVED") await waitForApproval(pp, order);
   const cap = await pp.request("POST", `/v2/checkout/orders/${order.id}/capture`, { requestId: `spike-s2-capture-${order.id}` });
   const captureId = cap.purchase_units[0].payments.captures[0].id;
   const got = await pp.request("GET", `/v2/checkout/orders/${order.id}`);
