@@ -1,7 +1,7 @@
 // S1: OAuth works for the merchant app and the agent-platform app.
 import { agentPlatform, fail, merchant, pass, spike } from "./_lib";
 
-const PAYOUTS = "https://uri.paypal.com/services/payments/payouts";
+const PAYOUTS = "https://uri.paypal.com/payments/payouts";
 const DISPUTES = "https://uri.paypal.com/services/disputes/update-seller";
 
 await spike("S1 merchant", async () => {
