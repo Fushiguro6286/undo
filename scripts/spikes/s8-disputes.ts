@@ -1,7 +1,7 @@
 // S8: disputes on a sandbox dispute opened by a buyer: list, show, read HATEOAS links, then run the next
 // available sandbox step: require-evidence -> provide-evidence (multipart) -> adjudicate. Each step runs only
 // when the dispute's own links offer it. Re-run to continue if PayPal hasn't moved the case yet.
-// Usage: npm run spike scripts/spikes/s8-disputes.ts [disputeId] [--list]
+// Usage: npm run spike scripts/spikes/s8-disputes.ts [disputeId] [--list] [--escalate]
 // The `input` multipart part name is NOT in PayPal's published schema; this spike verifies it against sandbox.
 import { fail, merchant, pass, sleep, spike } from "./_lib";
 
@@ -32,6 +32,13 @@ await spike("S8", async () => {
   const steps: string[] = [];
   let { d, can } = await show();
 
+  // Inquiries never offer adjudicate; --escalate turns this test case into a claim so the sandbox steps can follow.
+  if (process.argv.includes("--escalate") && can("escalate")) {
+    await pp.request("POST", `/v1/customer/disputes/${id}/escalate`, { body: { note: "Undo spike S8: escalating test inquiry to a claim." } });
+    steps.push("escalate (inquiry -> claim)");
+    await sleep(3000);
+    ({ d, can } = await show());
+  }
   if (can("require-evidence")) {
     await pp.request("POST", `/v1/customer/disputes/${id}/require-evidence`, { body: { action: "SELLER_EVIDENCE" } });
     steps.push("require-evidence");
