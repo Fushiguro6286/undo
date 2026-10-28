@@ -11,7 +11,7 @@ Run each with `npm run spike scripts/spikes/<file>.ts`. Every script prints `PAS
 | S5 tracking add/update | `s5-tracking.ts` | **PASS** (Oct 28) | order 4GP18601L49641022: tracker `…-UNDO1793211323536` patched then CANCELLED, `…-UNDO1793211331445B` SHIPPED | tracker id = `{captureId}-{trackingNumber}`; a wrong tracking number is fixed by cancel + re-add |
 | S6 payout from agent platform | `s6-payout.ts` | **PASS** (Oct 28) | batch V4TS9YYP47G42 SUCCESS; reused sender_batch_id → 400 USER_BUSINESS_ERROR | agent-fault payouts are live; use `sender_batch_id = ${claimId}:payout:${version}` as the duplicate guard |
 | S7 test-card capture, no buyer | `s7-card-capture.ts` | **PASS** (Oct 28) | order 41V33207CW8031431 created COMPLETED with intent CAPTURE, capture 5L624410YE142664Y | **order pool is funded by sandbox test card** (no hand approvals) |
-| S8 disputes sandbox flow | `s8-disputes.ts` | not run (needs a dispute) | | how disputes are demonstrated |
+| S8 disputes sandbox flow | `s8-disputes.ts` | **partial** (Oct 28): show works; no step links yet | dispute PP-R-BQG-10194997 on capture 1LN39240P80983735: UNDER_REVIEW / INQUIRY / UNDER_PAYPAL_REVIEW, reason MERCHANDISE_OR_SERVICE_NOT_RECEIVED, links = self only. `GET /v1/customer/disputes` (list) returned 0 while show-by-id worked | Disputes polling must not rely on the list alone: also re-fetch known ids (from `CUSTOMER.DISPUTE.*` webhooks / stored rows) by id. Steps wait for PayPal's links |
 | S9 webhook verification | `s9-webhook.ts` + Render logs | not run (needs Render) | | |
 
 ## Doc findings (checked against PayPal's published OpenAPI schemas, Oct 28 2026)
