@@ -44,7 +44,7 @@ Leave `PAYPAL_WEBHOOK_ID` and `APP_BASE_URL` empty until step E.
 2. Render (https://dashboard.render.com), **New → Blueprint** → connect the `undo` repo → Render reads `render.yaml` and proposes:
    - web service `undo` (plan `0.5c-512mb`, paid, always on)
    - Postgres `undo-db` (plan `0.1c-256mb`, paid)
-3. Render asks for every `sync: false` variable. Fill in the PayPal values from step C. Leave `LLM_MODEL`, `ANTHROPIC_API_KEY`, `JUDGE_LOGIN_PASSWORD` and `AG_STUDIO_LICENSE_KEY` empty for now. Set `APP_BASE_URL` once you know the URL (next step).
+3. Render asks for every `sync: false` variable. Fill in the PayPal values from step C. Set `LLM_MODEL` to `gemini-3.8-flash` and `GOOGLE_GENERATIVE_AI_API_KEY` to your Gemini key. Leave `JUDGE_LOGIN_PASSWORD` and `AG_STUDIO_LICENSE_KEY` empty for now. Set `APP_BASE_URL` once you know the URL (next step).
 4. **Apply**. When the first deploy finishes, copy the service URL (for example `https://undo-xxxx.onrender.com`).
 5. In the `undo` service → **Environment**: set `APP_BASE_URL` to that URL (no trailing slash). Also put it in local `.env`.
 6. Open `<URL>/api/health`. Expected: `{"ok":true,"paypalEnv":"sandbox","database":"ok"}`.
