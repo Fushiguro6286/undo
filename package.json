@@ -18,6 +18,8 @@
     "spike": "tsx --env-file=.env"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.93",
+    "ai": "^7.0.158",
     "drizzle-orm": "^0.45.4",
     "next": "^16.4.3",
     "pg": "^8.23.1",
