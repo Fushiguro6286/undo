@@ -31,10 +31,10 @@ services:
       - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
         sync: false
       - key: LLM_PROVIDER
-        value: anthropic
+        value: google
       - key: LLM_MODEL
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: GOOGLE_GENERATIVE_AI_API_KEY
         sync: false
       - key: LLM_DAILY_SPEND_CAP_USD
         value: "5"
