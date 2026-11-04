@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { orders } from "@/src/db/schema";
 import { verifyWebhook } from "@/src/paypal/webhooks";
-import { confirmRefund } from "@/src/claims/resolve";
+import { confirmRefund, refreshPayout } from "@/src/claims/resolve";
+import { syncDispute } from "@/src/disputes/sync";
 
 // Only verified events are acted on. Handlers are idempotent: PayPal retries deliveries.
 export async function POST(req: Request) {
@@ -32,6 +33,16 @@ export async function POST(req: Request) {
   if (event.event_type === "PAYMENT.CAPTURE.REFUNDED" && event.resource?.id) {
     const done = await confirmRefund(event.resource.id); // resource is the refund
     if (done) console.log(`[webhook] refund ${event.resource.id} confirmed for claim ${done.claimId} after ${done.secondsFromClaim}s`);
+  }
+  if (event.event_type?.startsWith("CUSTOMER.DISPUTE.") && event.resource?.dispute_id) {
+    const d = await syncDispute(event.resource.dispute_id);
+    console.log(`[webhook] dispute ${d.id} ${d.status} claim ${d.claimId ?? "-"}`);
+  }
+  if (event.event_type?.startsWith("PAYMENT.PAYOUTS")) {
+    // Item events carry payout_batch_id; batch events carry batch_header. The status is re-read from PayPal.
+    const batchId = event.resource?.payout_batch_id ?? event.resource?.batch_header?.payout_batch_id;
+    const done = batchId ? await refreshPayout(batchId) : null;
+    if (done) console.log(`[webhook] payout ${batchId} ${done.itemStatus} for claim ${done.claimId} after ${done.secondsFromClaim}s`);
   }
   return Response.json({ verified: true });
 }

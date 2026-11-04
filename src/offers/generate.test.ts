@@ -43,6 +43,12 @@ describe("generateOffers", () => {
     expect(offers({ party: "BUYER" })).toEqual([["DENY_WITH_REASON", null, "ALLOW"], ["STANDARD_RETURN", "26.10", "QUEUE"], ["ESCALATE_TO_PAYPAL", null, "ALLOW"]]);
     expect(offers({ party: "BUYER", daysSinceDelivery: 31 })).toEqual([["DENY_WITH_REASON", null, "ALLOW"], ["ESCALATE_TO_PAYPAL", null, "ALLOW"]]);
   });
+  it("every offer set, for every party and state, includes Escalate to PayPal", () => {
+    for (const party of ["MERCHANT", "CARRIER", "AGENT", "BUYER", "UNCLEAR"] as const)
+      for (const disputed of [false, true])
+        for (const daysSinceDelivery of [2, 31])
+          expect(offers({ party, disputed, daysSinceDelivery, mode: party === "AGENT" ? "DELEGATED" : "CONFIRMED", ceiling: party === "AGENT" ? "35.00" : null }).map((o) => o[0])).toContain("ESCALATE_TO_PAYPAL");
+  });
   it("no decision: no offers; disputed capture: only escalation", () => {
     expect(offers({ party: null })).toEqual([]);
     expect(offers({ disputed: true })).toEqual([["ESCALATE_TO_PAYPAL", null, "ALLOW"]]);

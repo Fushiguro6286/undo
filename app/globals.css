@@ -68,6 +68,7 @@ textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); bor
 .uc-widget { height: 100%; overflow: auto; display: grid; gap: 10px; align-content: start; padding: 4px 2px; color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
 .uc-widget h4 { margin: 4px 0 0; }
 .uc-widget button { padding: 6px 12px; font-size: 14px; }
+.uc-button { display: inline-block; padding: 6px 12px; font-size: 14px; font-weight: 600; border-radius: 10px; background: var(--accent); color: #fff; text-decoration: none; }
 .uc-widget input, .uc-widget select { padding: 6px 8px; font-size: 14px; min-width: 0; }
 .uc-item { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }
 .uc-item p { margin: 0; }

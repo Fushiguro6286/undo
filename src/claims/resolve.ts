@@ -1,13 +1,14 @@
 // Claim resolution: offers after a fault ruling, the buyer's choice, proposals, the merchant's approval queue and
 // the refund webhook. Every step re-runs the evaluator and is written to the audit log. Money moves only through
 // src/money/router.ts, and only after ALLOW or a person's approval.
-import { and, desc, eq, ne, sql } from "drizzle-orm";
+import { and, desc, eq, ne, notInArray, sql } from "drizzle-orm";
 import { audit } from "../audit/log";
 import { db } from "../db";
-import { approvals, claims, evidence, intents, moneyActions, offers, orders, shipments } from "../db/schema";
+import { approvals, claims, disputes, evidence, intents, moneyActions, offers, orders, payouts, shipments } from "../db/schema";
+import { openDisputes } from "../disputes/check";
 import type { FaultParty, Reason } from "../fault/engine";
 import { fromCents } from "../money/cents";
-import { refundCapture } from "../money/router";
+import { DisputedCaptureError, payoutAgentFault, payoutItemStatus, refundCapture } from "../money/router";
 import { explainOffers, templateExplanation } from "../offers/explain";
 import { ESCALATE_URL, generateOffers, type OfferDraft } from "../offers/generate";
 import { merchant } from "../paypal/client";
@@ -19,7 +20,7 @@ import type { Assessment } from "./fraud";
 const DAY = 86_400_000;
 const RETURN_ACTIONS: readonly Action[] = ["REFUND_ON_RETURN", "STANDARD_RETURN"];
 /** Claim states where nothing more can be chosen or proposed. */
-const FINAL = ["REFUND_SENT", "RESOLVED", "DENIED", "ESCALATED"];
+const FINAL = ["REFUND_SENT", "PAYOUT_SENT", "RESOLVED", "DENIED", "ESCALATED"];
 
 async function context(claimId: string) {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(claimId)) throw new ClaimError(`unknown claim ${claimId}`);
@@ -35,12 +36,19 @@ async function context(claimId: string) {
     .from(moneyActions).innerJoin(claims, eq(moneyActions.claimId, claims.id))
     .where(and(eq(claims.orderId, order.id), eq(moneyActions.kind, "refund"), ne(moneyActions.status, "FAILED")));
   const policy = await activePolicy();
+  // Disputed if PayPal lists an open dispute on the capture, or a synced dispute on this order is still open.
+  const [paypalOpen, [synced]] = await Promise.all([
+    order.captureId ? openDisputes(order.captureId) : Promise.resolve([] as string[]),
+    db().select({ id: disputes.paypalDisputeId }).from(disputes).innerJoin(claims, eq(disputes.claimId, claims.id))
+      .where(and(eq(claims.orderId, order.id), ne(disputes.status, "RESOLVED"))).limit(1),
+  ]);
+  const disputeIds = [...new Set([...paypalOpen, ...(synced ? [synced.id] : [])])];
   const evalContext = (party: FaultParty): EvalContext => ({
     party, policy, mode: intent.mode, currency: order.currency, captureAmount: order.amount!, refunded, ceiling: order.ceiling,
-    disputed: false, // shortcut: no dispute check yet; Day 9 adds it (and the TRANSACTION_DISPUTED guard) before every refund
+    disputed: disputeIds.length > 0,
     returnRequired: (ev?.a as Assessment | null)?.returnRequired ?? false,
   });
-  return { claim, order, intent, shipment, policy, refunded, evalContext };
+  return { claim, order, intent, shipment, policy, refunded, disputeIds, evalContext };
 }
 
 /** After a fault ruling: replaces any earlier, unchosen offers with fresh rule-made ones and their explanations. */
@@ -84,7 +92,14 @@ async function execute(c: Awaited<ReturnType<typeof context>>, offer: typeof off
     case "PARTIAL_REFUND_KEEP_ITEM":
     case "REFUND_ON_RETURN":
     case "STANDARD_RETURN": {
-      const r = await refundCapture({ claimId, captureId: c.order.captureId!, amount: offer.amount!, action: offer.action, version });
+      let r;
+      try {
+        r = await refundCapture({ claimId, captureId: c.order.captureId!, amount: offer.amount!, action: offer.action, version });
+      } catch (e) {
+        if (!(e instanceof DisputedCaptureError)) throw e;
+        await respondInPayPal(claimId, { disputeIds: e.disputeIds, source: e.source });
+        return { status: "RESPOND_IN_PAYPAL", escalateUrl: ESCALATE_URL };
+      }
       await setClaim(claimId, "REFUND_SENT");
       await audit(claimId, "REFUND_SENT", { offerId: offer.id, action: offer.action, amount: r.amount, refundId: r.refundId, paypalStatus: r.status, requestId: r.requestId });
       return { status: "REFUND_SENT", refund: r };
@@ -109,8 +124,12 @@ async function execute(c: Awaited<ReturnType<typeof context>>, offer: typeof off
       await setClaim(claimId, "ESCALATED");
       await audit(claimId, "ESCALATED_TO_PAYPAL", { offerId: offer.id, escalateUrl: ESCALATE_URL });
       return { status: "ESCALATED", escalateUrl: ESCALATE_URL };
-    case "AGENT_PLATFORM_PAYOUT":
-      throw new ClaimError("agent-platform payouts are not live yet (Day 9); the ruling and the amount owed stand");
+    case "AGENT_PLATFORM_PAYOUT": {
+      const p = await payoutAgentFault({ claimId, receiver: await buyerEmail(c.order), amount: offer.amount!, version });
+      await setClaim(claimId, "PAYOUT_SENT");
+      await audit(claimId, "PAYOUT_SENT", { offerId: offer.id, amount: p.amount, payoutBatchId: p.payoutBatchId, paypalStatus: p.status, requestId: p.requestId, paidBy: "agent_platform" });
+      return { status: "PAYOUT_SENT", payout: p };
+    }
     case "HUMAN_REVIEW":
       throw new ClaimError("a review has no remedy of its own: propose a remedy for this claim instead");
   }
@@ -134,6 +153,7 @@ export async function chooseOffer(claimId: string, offerId: string, requestedAmo
   const verdict = evaluate({ action: offer.action as Action, amount: offer.amount, currency: offer.currency }, c.evalContext(c.claim.faultParty as FaultParty));
   if (verdict.verdict === "BLOCK") {
     await audit(claimId, "CHOICE_BLOCKED", { offerId, action: offer.action, amount: offer.amount, reasons: verdict.reasons });
+    if (verdict.reasons.includes("CAPTURE_DISPUTED")) await respondInPayPal(claimId, { disputeIds: c.disputeIds, source: "DISPUTE_CHECK" });
     throw new ClaimError(`blocked by the store's policy: ${verdict.reasons.join(", ")}`);
   }
   // Only one choice per claim, even if two requests race.
@@ -149,7 +169,15 @@ export async function chooseOffer(claimId: string, offerId: string, requestedAmo
     await audit(claimId, "APPROVAL_REQUESTED", { approvalId: a.id, offerId, action: offer.action, amount: offer.amount, why: waitFor });
     return { status: NEEDS_PERSON[waitFor], approvalId: a.id };
   }
-  return execute(c, offer, 1);
+  try {
+    return await execute(c, offer, 1);
+  } catch (e) {
+    // PayPal refused or failed: reopen the offers. A retry sends the same request id, so nothing is paid twice.
+    await db().update(offers).set({ chosen: false }).where(eq(offers.id, offerId));
+    await db().update(claims).set({ status: "OFFERED" }).where(and(eq(claims.id, claimId), eq(claims.status, "CHOSEN")));
+    await audit(claimId, "EXECUTION_FAILED", { offerId, action: offer.action, error: (e as Error).message.slice(0, 200) });
+    throw e;
+  }
 }
 
 /**
@@ -167,6 +195,10 @@ export async function proposeRemedy(claimId: string, p: { action: Action; amount
   const verdict = evaluate({ action: p.action, amount, currency: c.order.currency }, c.evalContext(party));
   if (verdict.verdict === "BLOCK") {
     await audit(claimId, "PROPOSAL_BLOCKED", { proposedBy, action: p.action, amount, party, reasons: verdict.reasons });
+    if (verdict.reasons.includes("CAPTURE_DISPUTED")) {
+      await respondInPayPal(claimId, { disputeIds: c.disputeIds, source: "DISPUTE_CHECK" });
+      return { verdict: "BLOCK" as const, reasons: verdict.reasons, queued: null };
+    }
     // A blocked AI draft still reaches a person: the queue gets the amount the store's own rules make for that remedy.
     const queued = proposedBy === "studio_agent" ? await queueRuleOffer(c, p.action, party) : null;
     return { verdict: "BLOCK" as const, reasons: verdict.reasons, queued };
@@ -217,6 +249,7 @@ export async function decideApproval(approvalId: string, decision: "approve" | "
   const verdict = evaluate({ action: offer.action as Action, amount: offer.amount, currency: offer.currency }, c.evalContext(party));
   if (verdict.verdict === "BLOCK") {
     await audit(c.claim.id, "APPROVAL_BLOCKED", { approvalId, reasons: verdict.reasons });
+    if (verdict.reasons.includes("CAPTURE_DISPUTED")) await respondInPayPal(c.claim.id, { disputeIds: c.disputeIds, source: "DISPUTE_CHECK" });
     throw new ClaimError(`blocked by the store's policy: ${verdict.reasons.join(", ")}`);
   }
   if (!(await done("APPROVED")).length) throw new ClaimError("this approval was already decided");
@@ -252,6 +285,58 @@ export async function confirmRefund(refundId: string) {
   const secondsFromClaim = Math.round((Date.now() - c.createdAt.getTime()) / 1000);
   await audit(m.claimId, "REFUND_CONFIRMED", { refundId, amount: m.amount, requestId: m.requestId, secondsFromClaim });
   return { claimId: m.claimId, secondsFromClaim };
+}
+
+/** Who receives an agent-fault payout: the PayPal account that approved the order. */
+async function buyerEmail(order: typeof orders.$inferSelect) {
+  const o = await merchant().request("GET", `/v2/checkout/orders/${order.paypalOrderId}`);
+  const email = o.payer?.email_address as string | undefined;
+  if (email) return email;
+  // Judge-mode pool orders are paid by test card (no PayPal account): they pay out to a sandbox buyer account.
+  if (order.pool && process.env.POOL_BUYER_EMAIL) return process.env.POOL_BUYER_EMAIL;
+  throw new ClaimError("this order has no buyer PayPal account to pay; the ruling and the amount owed stand");
+}
+
+/**
+ * A disputed capture is answered in PayPal, never with an Undo remedy: open items are superseded and the claim waits
+ * in the approval queue as "respond in PayPal" (approving it marks the claim escalated). Idempotent.
+ */
+export async function respondInPayPal(claimId: string, why: { disputeIds: string[]; source: string }) {
+  const [won] = await db().update(claims).set({ status: "RESPOND_IN_PAYPAL" })
+    .where(and(eq(claims.id, claimId), notInArray(claims.status, ["RESPOND_IN_PAYPAL", "ESCALATED"]))).returning({ id: claims.id });
+  if (!won) return null;
+  await db().update(approvals).set({ status: "SUPERSEDED", decidedBy: "undo:dispute", decidedAt: new Date() }).where(and(eq(approvals.claimId, claimId), eq(approvals.status, "PENDING")));
+  let [esc] = await db().select({ id: offers.id }).from(offers).where(and(eq(offers.claimId, claimId), eq(offers.action, "ESCALATE_TO_PAYPAL"))).limit(1);
+  if (!esc) {
+    [esc] = await db().insert(offers).values({ claimId, action: "ESCALATE_TO_PAYPAL", amount: null, ruleIds: [], explanation: { label: "Take it to PayPal's Resolution Center", verdict: "ALLOW", buyer: "This payment is disputed in PayPal, so PayPal decides it.", merchant: "This payment is disputed: respond in PayPal's Resolution Center.", source: "template" } }).returning({ id: offers.id });
+  }
+  const [a] = await db().insert(approvals).values({ claimId, offerId: esc.id, proposedBy: "system", status: "PENDING" }).returning({ id: approvals.id });
+  await audit(claimId, "RESPOND_IN_PAYPAL", { approvalId: a.id, disputeIds: why.disputeIds, source: why.source, escalateUrl: ESCALATE_URL });
+  return { approvalId: a.id };
+}
+
+const PAYOUT_FAILED = ["FAILED", "RETURNED", "BLOCKED", "REFUNDED", "REVERSED", "DENIED", "CANCELED"];
+
+/** Reads a payout's status from PayPal (webhook or poll) and settles the claim once it succeeded or failed. Idempotent. */
+export async function refreshPayout(batchId: string) {
+  const { itemStatus } = await payoutItemStatus(batchId);
+  await db().update(payouts).set({ status: itemStatus }).where(eq(payouts.payoutBatchId, batchId));
+  const ok = itemStatus === "SUCCESS";
+  if (!ok && !PAYOUT_FAILED.includes(itemStatus)) return null; // PENDING, UNCLAIMED, ONHOLD: not settled yet
+  const [m] = await db().update(moneyActions).set({ status: ok ? "CONFIRMED" : "FAILED" })
+    .where(and(eq(moneyActions.paypalRef, batchId), eq(moneyActions.kind, "payout"), notInArray(moneyActions.status, ["CONFIRMED", "FAILED"]))).returning();
+  if (!m?.claimId) return null;
+  const [c] = await db().update(claims).set({ status: ok ? "RESOLVED" : "PAYOUT_FAILED" }).where(eq(claims.id, m.claimId)).returning();
+  const secondsFromClaim = Math.round((Date.now() - c.createdAt.getTime()) / 1000);
+  await audit(m.claimId, ok ? "PAYOUT_CONFIRMED" : "PAYOUT_FAILED", { payoutBatchId: batchId, itemStatus, amount: m.amount, requestId: m.requestId, secondsFromClaim });
+  return { claimId: m.claimId, itemStatus, secondsFromClaim };
+}
+
+/** Payouts still waiting for PayPal to settle them (for the poller). */
+export async function pendingPayoutBatches() {
+  const rows = await db().select({ ref: moneyActions.paypalRef }).from(moneyActions)
+    .where(and(eq(moneyActions.kind, "payout"), notInArray(moneyActions.status, ["CONFIRMED", "FAILED"])));
+  return rows.flatMap((r) => (r.ref ? [r.ref] : []));
 }
 
 /** Pending items for the merchant's approval queue, newest first. */

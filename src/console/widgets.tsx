@@ -9,6 +9,7 @@ import { productSvgDataUri } from "../store/art";
 
 type Claim = ConsoleData["claims"][number];
 type Approval = ConsoleData["approvals"][number];
+const RESOLUTION_CENTER = "https://www.sandbox.paypal.com/resolutioncenter";
 type State = { data?: ConsoleData; selected?: string; notice?: { text: string; error?: boolean }; busy?: string };
 
 let state: State = {};
@@ -89,18 +90,25 @@ function QueueItem({ a, claim }: { a: Approval; claim?: Claim }) {
   const [draft, setDraft] = useState({ asParty: "MERCHANT", action: "PARTIAL_REFUND_KEEP_ITEM", amount: "" });
   const why = (a.explanation as { merchant?: string } | null)?.merchant;
   const review = a.action === "HUMAN_REVIEW";
+  const disputed = a.claimStatus === "RESPOND_IN_PAYPAL";
   const off = busy !== undefined;
   return (
     <article className="uc-item">
       <header className="uc-head">
-        <strong>{label(a.action)} {money(a.amount)}</strong>
+        <strong>{disputed ? "Respond in PayPal" : `${label(a.action)} ${money(a.amount)}`}</strong>
         <span className={`uc-party uc-${(a.faultParty ?? "none").toLowerCase()}`}>{a.faultParty ?? "No ruling"}</span>
       </header>
       <p className="muted uc-small">
         {claim?.item?.name ?? "Order"} · paid {money(a.orderAmount)} · order {a.paypalOrderId} · proposed by {a.proposedBy === "studio_agent" ? "Studio agent (AI)" : "Undo"}
       </p>
       {why && <p className="uc-small">{why}</p>}
-      {review ? (
+      {disputed ? (
+        <div className="uc-actions">
+          <a className="uc-button" href={RESOLUTION_CENTER} target="_blank" rel="noreferrer">Open PayPal Resolution Center</a>
+          <button className="uc-ghost" disabled={off} onClick={() => approve(a)}>{busy === a.id ? "Working…" : "Mark handled in PayPal"}</button>
+          <button className="uc-ghost" onClick={() => select(a.claimId)}>Evidence</button>
+        </div>
+      ) : review ? (
         <div className="uc-actions">
           <select aria-label="Who is at fault" value={draft.asParty} onChange={(e) => setDraft({ ...draft, asParty: e.target.value })}>
             {PARTIES.map((p) => <option key={p}>{p}</option>)}
@@ -210,6 +218,7 @@ const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-di
 const STAGE: Record<string, string> = {
   CLAIM_OPENED: "claim", EVIDENCE_ADDED: "evidence", FAULT_DECIDED: "fault", OFFERS_CREATED: "offers",
   REFUND_SENT: "paypal", REFUND_CONFIRMED: "paypal", REPLACEMENT_SHIPPING: "paypal", ESCALATED_TO_PAYPAL: "paypal",
+  PAYOUT_SENT: "paypal", PAYOUT_CONFIRMED: "paypal", RESPOND_IN_PAYPAL: "paypal",
 };
 
 /** Claim -> evidence -> fault -> offers -> decision -> PayPal confirmation, straight from the audit chain. */

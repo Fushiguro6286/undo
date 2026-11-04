@@ -36,7 +36,12 @@ const STEP: Record<string, (p: P) => string> = {
   REFUND_CONFIRMED: (p) => `PayPal confirmed the refund (webhook, ${p.secondsFromClaim}s after the claim)`,
   REPLACEMENT_SHIPPING: (p) => `Replacement shipping (tracking ${p.trackingNumber})`,
   CLAIM_DENIED: () => "Claim denied; Escalate to PayPal offered",
-  ESCALATED_TO_PAYPAL: () => "Buyer escalated to PayPal",
+  ESCALATED_TO_PAYPAL: () => "Escalated to PayPal",
+  EXECUTION_FAILED: (p) => `${act(p.action)} failed at PayPal; offers reopened (${p.error})`,
+  PAYOUT_SENT: (p) => `Agent platform payout${usd(p.amount)} sent through PayPal Payouts (batch ${p.payoutBatchId})`,
+  PAYOUT_CONFIRMED: (p) => `PayPal confirmed the payout to the buyer (${p.secondsFromClaim}s after the claim)`,
+  PAYOUT_FAILED: (p) => `Payout ${p.payoutBatchId} not paid: PayPal status ${p.itemStatus}`,
+  RESPOND_IN_PAYPAL: (p) => `Payment disputed in PayPal${p.disputeIds?.length ? ` (${p.disputeIds.join(", ")})` : ""}: no Undo refund; respond in PayPal`,
 };
 
 export async function consoleData() {

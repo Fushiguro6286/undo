@@ -36,6 +36,7 @@ export async function createCheckout(mode: IntentRecord["mode"], buyerRef: strin
   const order = await merchant().request("POST", "/v2/checkout/orders", { requestId: `${record.id}:create`, body });
   const amount = body.purchase_units[0].amount.value;
   const cap = order.status === "COMPLETED" ? order.purchase_units?.[0]?.payments?.captures?.[0] : undefined;
+  const auth = order.status === "COMPLETED" ? order.purchase_units?.[0]?.payments?.authorizations?.[0] : undefined; // DELEGATED pool order
   await db().transaction(async (tx) => {
     await tx.insert(intents).values({ id: record.id, buyerRef, limits, cart: record.cart, mode, hash, createdAt: new Date(record.created_at) });
     await tx.insert(orders).values({
@@ -44,7 +45,8 @@ export async function createCheckout(mode: IntentRecord["mode"], buyerRef: strin
       paypalIntent: body.intent,
       ceiling: mode === "DELEGATED" ? amount : null,
       amount: cap?.amount.value ?? (mode === "CONFIRMED" ? amount : null),
-      status: cap?.status === "COMPLETED" ? "COMPLETED" : "CREATED", // PAYER_ACTION_REQUIRED is stored as CREATED too: waiting for the buyer
+      status: cap?.status === "COMPLETED" ? "COMPLETED" : auth ? "AUTHORIZED" : "CREATED", // PAYER_ACTION_REQUIRED is stored as CREATED too: waiting for the buyer
+      authorizationId: auth?.id ?? null,
       captureId: cap?.id ?? null,
       promisedBy: cap ? promisedBy(new Date()) : null,
       pool: !!pool,
