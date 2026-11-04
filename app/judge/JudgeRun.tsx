@@ -18,6 +18,7 @@ const label = (o: Offer) => `${o.explanation?.label ?? o.action}${o.amount ? ` $
 export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string; title: string; blurb: string; expect: string }) {
   const [steps, setSteps] = useState<string[]>([]);
   const [claimId, setClaimId] = useState<string>();
+  const [paid, setPaid] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
 
@@ -26,6 +27,7 @@ export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string;
     setError(undefined);
     setSteps([]);
     setClaimId(undefined);
+    setPaid(false);
     const push = (t: string) => setSteps((s) => [...s, t]);
     try {
       const j = await post("/api/judge/run", { scenario });
@@ -41,6 +43,7 @@ export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string;
       if (!offer) throw new Error(`the expected remedy ${j.choose} was not offered; open the claim to see why`);
       const { result } = await post(`/api/claims/${j.claimId}/choose`, { offer_id: offer.id });
       const ids = [result.refund?.refundId && `PayPal refund ${result.refund.refundId}`, result.payout?.payoutBatchId && `PayPal payout batch ${result.payout.payoutBatchId}`].filter(Boolean);
+      setPaid(ids.length > 0);
       push(`Buyer's agent picks ${label(offer)} → ${result.status}${ids.length ? ` · ${ids.join(" · ")}` : ""}`);
     } catch (e) {
       setError((e as Error).message);
@@ -65,7 +68,7 @@ export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string;
       {error && <p className="error" role="alert">{error}</p>}
       {claimId && !busy && (
         <p className="small">
-          <a href={`/claims/${claimId}`}>Open the claim page</a> (shows PayPal's confirmation when it lands) · <a href="/merchant">See it in the merchant console</a>
+          <a href={`/claims/${claimId}`}>Open the claim page</a>{paid && " (shows PayPal's confirmation when it lands)"} · <a href="/merchant">See it in the merchant console</a>
         </p>
       )}
     </article>

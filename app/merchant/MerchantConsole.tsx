@@ -44,7 +44,7 @@ export function MerchantConsole({ licenseKey, fallback = false }: { licenseKey?:
         </header>
         <form className="card" onSubmit={(e) => { e.preventDefault(); enter(password); }}>
           <label className="row">
-            <span className="muted">Merchant password (in the README for judges)</span>
+            <span className="muted">Merchant password (judges: see the Devpost testing instructions)</span>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
           </label>
           <div className="row"><button disabled={busy}>{busy ? "Checking…" : "Open console"}</button></div>

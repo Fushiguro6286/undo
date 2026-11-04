@@ -46,9 +46,9 @@ export default function Page() {
       <section className="card">
         <h2>Try it by hand</h2>
         <ol className="small">
-          <li><a href="/">The store</a>: ask for an item; approve on PayPal with a sandbox buyer login from the README.</li>
+          <li><a href="/">The store</a>: ask for an item; approve on PayPal with a sandbox buyer login from the Devpost testing instructions.</li>
           <li>On the order, open a claim and upload one of the sample photos below. On judge-mode pool orders the code <code>{DEMO_CHALLENGE_CODE}</code> printed on them is accepted; real claims always get a fresh code.</li>
-          <li><a href="/merchant">Merchant console</a> (password in the README): the approval queue, evidence viewer, claim timeline and audit badge. <a href="/merchant/grid">Plain AG Grid version</a>.</li>
+          <li><a href="/merchant">Merchant console</a> (password in the Devpost testing instructions): the approval queue, evidence viewer, claim timeline and audit badge. <a href="/merchant/grid">Plain AG Grid version</a>.</li>
           <li>Claude Desktop as the buyer&apos;s agent: add <code>/mcp</code> on this site as a custom connector (README).</li>
         </ol>
         <ul className="judge-samples small">

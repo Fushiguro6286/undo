@@ -62,7 +62,8 @@ textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); bor
 .uc-top a { color: var(--accent); }
 .uc-shell { flex: 1; min-height: 640px; display: flex; flex-direction: column; gap: 8px; }
 .uc-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.uc-studio { flex: 1; min-height: 0; }
+.uc-studio { flex: 1; min-height: 0; min-width: 0; overflow-x: auto; } /* AG Studio needs ~600px; on phones it scrolls in its box, not the page */
+.uc-shell, .uc-page { min-width: 0; }
 .uc-pad { padding: 16px; }
 .uc-ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
 .uc-widget { height: 100%; overflow: auto; display: grid; gap: 10px; align-content: start; padding: 4px 2px; color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
@@ -124,5 +125,6 @@ textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); bor
 .judge-samples img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
 
 /* Fallback AG Grid console */
+.page > *, .grid-console > * { min-width: 0; } /* grid items default to min-width:auto, so wide tables would widen the page */
 .grid-console { padding-top: 0; max-width: 1200px; }
 .grid-console-table { height: 420px; margin-top: 8px; }

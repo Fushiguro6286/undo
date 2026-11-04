@@ -7,7 +7,7 @@ type Vision = { challenge_code_found: string | null; size_tag_text: string | nul
 type Assessment = { decision: "NEEDS_NEW_PHOTO" | "READY"; signals: string[]; returnRequired: boolean; photoMatches: { kind: string; ref: string; distance: number }[] };
 type Claim = {
   id: string; type: string; description: string; challengeCode: string; status: string; deliveryContested: boolean;
-  order: { paypalOrderId: string; amount: string | null; chosenItem: Variant | null; intent: { mode: string; cart: { sku: string }[] | null } | null };
+  order: { paypalOrderId: string; amount: string | null; chosenItem: Variant | null; intent: { mode: string; hash: string; cart: { sku: string }[] | null } | null };
   shipment: { deliveredAt: string | null; trackingNumber: string | null } | null;
   evidence: { id: string; photoPath: string; visionResult: Vision | null }[];
   assessment: Assessment | null;
@@ -108,7 +108,20 @@ export function ClaimPage({ id }: { id: string }) {
     }
   }
 
-  if (!claim) return <main className="page">{error ? <p className="error" role="alert">{error}</p> : <p className="muted">Loading claim…</p>}</main>;
+  if (!claim) {
+    return (
+      <main className="page">
+        {error ? (
+          <header className="hero">
+            <p className="eyebrow">Fernleaf Goods · Claim</p>
+            <h1>We couldn&apos;t open this claim</h1>
+            <p className="error" role="alert">{error}</p>
+            <p className="muted">Check the link from your agent or the store. You can open a new claim from <a href="/">the store</a>.</p>
+          </header>
+        ) : <p className="muted">Loading claim…</p>}
+      </main>
+    );
+  }
 
   const item = claim.order.chosenItem ?? variantBySku(claim.order.intent?.cart?.[0]?.sku ?? "");
   const latest = claim.evidence[0];
@@ -122,7 +135,7 @@ export function ClaimPage({ id }: { id: string }) {
     <main className="page">
       <header className="hero">
         <p className="eyebrow">Fernleaf Goods · Claim</p>
-        <h1>Show us what arrived</h1>
+        <h1>{open ? "Show us what arrived" : "Your claim"}</h1>
         <p className="muted">PayPal order <code>{claim.order.paypalOrderId}</code>{item ? ` · ${itemName(item)} · $${claim.order.amount}` : ""}</p>
       </header>
 
@@ -140,6 +153,13 @@ export function ClaimPage({ id }: { id: string }) {
         <section className="card stack" aria-live="polite">
           <p className="eyebrow">Decision</p>
           <h2>{PARTY_TEXT[claim.faultParty] ?? claim.faultParty}</h2>
+          {claim.reasons?.some((r) => r.code === "CONFIRMED_CART_MATCHES") && claim.order.intent && (
+            <p className="muted">
+              You approved this exact cart on PayPal (order <code>{claim.order.paypalOrderId}</code>), and the item in your photo matches it. The record of what you
+              approved is fingerprinted (intent hash <code title={claim.order.intent.hash}>{claim.order.intent.hash.slice(0, 12)}…</code>) inside that PayPal order, so it
+              can&apos;t have been changed after you approved.
+            </p>
+          )}
           {claim.status === "OFFERED" ? (
             <>
               <p className="muted">These are the remedies the store&apos;s policy allows. Pick one.</p>
