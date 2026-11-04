@@ -17,7 +17,7 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - [x] **Day 9, Nov 6:** (done Nov 4; done-when passes on hosted) agent-fault payout, Escalate to PayPal link, `TRANSACTION_DISPUTED` guard, "respond in PayPal" queue state
 - [ ] **Day 10, Nov 7:** escalated claims on disputes opened in advance; record the replay
   - [ ] **CHECKPOINT C:** all 6 demo beats run
-- [ ] **Day 11, Nov 8:** 13 eval scenarios and results page. **FEATURE FREEZE** at end of day
+- [x] **Day 11, Nov 8:** (done Nov 4; FEATURE FREEZE in effect) 13 eval scenarios and results page. **FEATURE FREEZE** at end of day
 - [ ] **Day 12, Nov 9:** judge mode, README, `npm run seed`, Resolution Extension doc, fallback AG Grid build
 - [ ] **Day 13, Nov 10:** full incognito test on the hosted URL; fix and polish
 - [ ] **Day 14, Nov 11:** video (human); Devpost text and README polish
@@ -132,3 +132,12 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Dispute stock:** `scripts/dispute-stock.ts links` made 5 CONFIRMED tee orders with approval links (87C6370574184652L, 0UN368672A368253J, 7XM09478HB9689439, 43H316913N2392135, 05J60903RB2842132), flagged pool so the demo code works. After the human approves them, `dispute-stock.ts claims` records delivery (real PayPal tracker) and files 3 denial claims and 2 merchant-fault claims.
 - **Tests:** 106 pass.
 - **Waiting on human:** approve the 5 links as sandbox buyers, then open a dispute on each in the sandbox Resolution Center; say go for `accept-claim` (PayPal refunds $29 sandbox) on a merchant-fault one, or tap it in the console. Then: `scripts/escalated-run.ts <id>` on a denial dispute records the demo replay, which completes CHECKPOINT C.
+
+### Nov 4 (Day 11: eval harness and /evals page; FEATURE FREEZE)
+- **Harness:** `npm run eval` (replay, default) runs the deterministic core on all 13 fixtures (`evals/core.ts`: fraud checks -> fault engine -> rule-made offers -> evaluator on each proposal). `npm run eval -- --live <baseUrl>` runs 12 scenarios against the deployment with judge-pool orders, the sample photos and the vision model, and waits for PayPal to confirm each refund or payout. Writes `evals/results.json` and `evals/recordings/scenario-NN.json` (steps and real PayPal ids).
+- **Results (measured, hosted, Nov 4 18:30 UTC):** core 13/13 correct fault and 13/13 correct remedy; live 12/12 and 12/12 (#3, late delivery, is core only because a real late delivery can't be produced on demand); 0 policy violations; 9 blocked actions (core 7 + live 2); prompt injection #13 ignored (same offers as #1, refund 3PP32290YE363984L); median 49 s from claim to confirmed refund (n = 3: 34, 49, 52 s). Agent payout #5 confirmed in 83 s (not part of the refund median).
+- **Scoring fixes after the first live run (11/12):** offers compared as sets (order varies); #7 uses the tee photo on a jacket order, so it expects ITEM_TYPE plus COLOR; seconds now come from the audit event written when PayPal confirms (`secondsFromClaim`), not from when the script checked.
+- **`/evals` page:** tiles, live summary, and an expandable table per scenario with steps and PayPal ids. Hosted page checked: renders the numbers above.
+- **Pool:** eval and checkpoint scripts use only `judge-pool` orders, so dispute stock is never consumed. About 1 tee, 0-1 jackets and 0-1 DELEGATED orders left; top up before any further live run.
+- **Tests:** 107 pass; build OK.
+- **Still waiting on human (Day 10 / CHECKPOINT C):** the 5 dispute-stock orders are still unapproved (CREATED).
