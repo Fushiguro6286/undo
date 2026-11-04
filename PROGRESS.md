@@ -19,7 +19,7 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
   - [ ] **CHECKPOINT C:** all 6 demo beats run
 - [x] **Day 11, Nov 8:** (done Nov 4; FEATURE FREEZE in effect) 13 eval scenarios and results page. **FEATURE FREEZE** at end of day
 - [x] **Day 12, Nov 9:** (done Nov 5; disputes wait on human) judge mode, README, `npm run seed`, Resolution Extension doc, fallback AG Grid build
-- [ ] **Day 13, Nov 10:** full incognito test on the hosted URL; fix and polish
+- [x] **Day 13, Nov 10:** (done Nov 5) full incognito test on the hosted URL; fix and polish
 - [ ] **Day 14, Nov 11:** video (human); Devpost text and README polish
 - [ ] **Day 15, Nov 12:** buffer; submit by 8 PM IST
 
@@ -148,4 +148,12 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Done-when:** fresh clone + `.env.example`: install, 109 tests and build pass. Hosted `scripts/judge-check.ts`: **ALL PASS**: merchant -> refund 9DM93847XR924664X RESOLVED (155 s incl. webhook), denial -> DENIED (14 s), agent -> payout batch 9HYK6N6HUQDV2 RESOLVED (47 s). Secret scan of full history: every `.env` / `.env.neon` / `.env.local` secret value has 0 hits, no key patterns, only `.env.example` ever committed (gitleaks download was blocked, so this is a git-history grep). `scripts/spikes/day12-check.ts`: rate-limit counter and spend recording PASS.
 - **Neon pool:** 40 judge-pool orders minus the 3 used above.
 - **Not done (human):** 0 open disputes (5 needed); the 5 dispute-stock orders are still unapproved. Judge logins (merchant password, 3 sandbox buyers) go in the Devpost testing instructions, not the public README. `@paypal/agent-toolkit` stays unused (README says why).
+
+### Nov 5 (Day 13: test and polish)
+- **Browser pass** (fresh Chrome tab, hosted URL; merchant console logged-in views on a local dev server because the merchant password can't be typed on the public site from automation): store + intent extraction, `/judge` denial button, claim page, evidence-pack PDF, `/evals`, `/merchant`, `/merchant/grid`, `/merchant/policy`, `/orders/cancelled`, audit verify, 404. PayPal approval (buyer login) stays a human step.
+- **Fixed:** claim page says "Your claim" once decided; CONFIRMED denials now cite the PayPal order and the intent hash on the page (scenario 8); a bad claim link gets a real page; custom 404; both consoles scrolled sideways on phones (CSS grid items `min-width: 0`; AG Studio needs ~600 px so it scrolls inside its own box); judge page shows "PayPal confirmation" only when money moved; login hints point to the Devpost testing instructions (credentials stay out of the public repo).
+- **Done-when, two consecutive clean runs (hosted, after the deploy):** run 1: merchant refund 9PY164458N576312L RESOLVED 33 s, denial 5 s, agent payout BJ4UXWXTPPXNE RESOLVED 87 s (agent leg rerun after the hour: the first try hit the judge rate limit of 6 runs/IP/hour, as designed). Run 2: refund 2JE87362RH4924624 RESOLVED 28 s, denial 4 s, payout TVUPNPDY3FCBJ RESOLVED 82 s. Every page at 390 px: no horizontal scroll; no console errors on either pass; audit chain verifies (342 events).
+- **Hosting check:** Vercel Hobby (serverless, no sleep; per-minute crons not allowed, see Day 9). Neon **free** plan (about 100 CU-hours per project per month per current docs; scale-to-zero): fine for judge traffic, but watch usage or upgrade before Dec 15. AG Studio trial key valid to Dec 19; production-use terms still to confirm with AG Grid. The spec's "paid always-on Render" is replaced by Vercel + Neon (human's call).
+- **Neon pool:** topped back up to 28 tees, 6 jackets, 6 DELEGATED.
+- **Still waiting on human:** the 5 dispute-stock orders are still unapproved (PAYER_ACTION_REQUIRED) and no new disputes are open, so Day 10's replay / CHECKPOINT C remain open (due Nov 7).
 

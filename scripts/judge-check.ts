@@ -1,6 +1,6 @@
 // Day 12 done-when: runs the three /judge one-click scenarios over HTTP exactly as the judge page does
 // (reserve a pool order + open the claim, upload the sample photo, pick the remedy), then waits for PayPal to confirm.
-// Usage: npx tsx scripts/judge-check.ts https://undo-nu.vercel.app
+// Usage: npx tsx scripts/judge-check.ts https://undo-nu.vercel.app [merchant|denial|agent]
 import { readFile } from "node:fs/promises";
 
 const base = (process.argv[2] ?? "http://localhost:3000").replace(/\/$/, "");
@@ -16,7 +16,8 @@ async function call(path: string, init?: RequestInit) {
 const post = (path: string, body: unknown) => call(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
 let failed = 0;
-for (const [scenario, party] of Object.entries(EXPECT)) {
+const only = process.argv[3];
+for (const [scenario, party] of Object.entries(EXPECT).filter(([k]) => !only || k === only)) {
   const t0 = Date.now();
   try {
     const j = await post("/api/judge/run", { scenario });
