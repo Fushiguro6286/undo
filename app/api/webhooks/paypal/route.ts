@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/src/db";
 import { orders } from "@/src/db/schema";
 import { verifyWebhook } from "@/src/paypal/webhooks";
+import { confirmRefund } from "@/src/claims/resolve";
 
 // Only verified events are acted on. Handlers are idempotent: PayPal retries deliveries.
 export async function POST(req: Request) {
@@ -27,6 +28,10 @@ export async function POST(req: Request) {
         await db().update(orders).set({ status: "COMPLETED", captureId: o.captureId ?? capture.id, amount: o.amount ?? capture.amount?.value }).where(eq(orders.id, o.id));
       }
     }
+  }
+  if (event.event_type === "PAYMENT.CAPTURE.REFUNDED" && event.resource?.id) {
+    const done = await confirmRefund(event.resource.id); // resource is the refund
+    if (done) console.log(`[webhook] refund ${event.resource.id} confirmed for claim ${done.claimId} after ${done.secondsFromClaim}s`);
   }
   return Response.json({ verified: true });
 }

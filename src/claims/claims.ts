@@ -15,6 +15,8 @@ import { codeMatches, newChallengeCode } from "./code";
 import { assess, type Assessment } from "./fraud";
 import { findMatches, phash, type HashedPhoto } from "./phash";
 import { analyzePhoto, type VisionResult } from "./vision";
+import { audit } from "../audit/log";
+import { createOffers, resolutionOf } from "./resolve";
 
 export class ClaimError extends Error {}
 
@@ -22,6 +24,11 @@ export const CLAIM_TYPES = ["wrong_item", "damaged", "late", "not_as_expected", 
 export type ClaimType = (typeof CLAIM_TYPES)[number];
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+/** New evidence can change the ruling only until a remedy is chosen. */
+const OPEN_STATES = ["AWAITING_PHOTO", "NEEDS_NEW_PHOTO", "DECIDED", "OFFERED"];
+const assertOpen = (c: typeof claims.$inferSelect) => {
+  if (!OPEN_STATES.includes(c.status)) throw new ClaimError(`this claim is ${c.status}; its evidence can no longer change`);
+};
 
 export async function openClaim(paypalOrderId: string, type: ClaimType, description: string) {
   const o = await getOrder(paypalOrderId);
@@ -30,6 +37,7 @@ export async function openClaim(paypalOrderId: string, type: ClaimType, descript
     .insert(claims)
     .values({ orderId: o.id, type, description: description.slice(0, 2000), challengeCode: newChallengeCode(), status: "AWAITING_PHOTO" })
     .returning();
+  await audit(c.id, "CLAIM_OPENED", { paypalOrderId, type, mode: o.intent?.mode ?? null, intentHash: o.intent?.hash ?? null });
   return { claimId: c.id, challengeCode: c.challengeCode, uploadUrl: `${process.env.APP_BASE_URL ?? ""}/claims/${c.id}` };
 }
 
@@ -68,6 +76,7 @@ async function loadClaim(claimId: string) {
 
 export async function addEvidence(claimId: string, upload: Buffer) {
   const { claim, order } = await loadClaim(claimId);
+  assertOpen(claim);
   if (upload.length > MAX_PHOTO_BYTES) throw new ClaimError("photo is larger than 10 MB");
   let jpeg: Buffer;
   try {
@@ -85,6 +94,7 @@ export async function addEvidence(claimId: string, upload: Buffer) {
   const photoMatches = findMatches(hash, [...(await listings()), ...(await earlierClaimPhotos(claimId, isJudgeSample(order)))]);
   const [ev] = await db().insert(evidence).values({ claimId, photoPath: "", photo: jpeg, phash: hash, visionResult: vision, fraudSignals: { photoMatches } }).returning({ id: evidence.id });
   await db().update(evidence).set({ photoPath: `/api/evidence/${ev.id}/photo` }).where(eq(evidence.id, ev.id));
+  await audit(claimId, "EVIDENCE_ADDED", { evidenceId: ev.id, phash: hash, vision, photoMatches });
   await refreshAssessment(claim, order);
   return getClaim(claimId);
 }
@@ -123,11 +133,14 @@ async function refreshAssessment(claim: typeof claims.$inferSelect, order: typeo
     .update(claims)
     .set({ status: fault.party ? "DECIDED" : "NEEDS_NEW_PHOTO", faultParty: fault.party, reasons: fault.reasons })
     .where(eq(claims.id, claim.id));
+  await audit(claim.id, "FAULT_DECIDED", { party: fault.party, reasons: fault.reasons, signals: a.signals, returnRequired: a.returnRequired, policyVersion: policy.version });
+  await createOffers(claim.id);
 }
 
 /** The buyer disputes the merchant-reported delivery date: fraud check 5, so a person decides. */
 export async function contestDelivery(claimId: string) {
   const { claim, order } = await loadClaim(claimId);
+  assertOpen(claim);
   await db().update(claims).set({ deliveryContested: true }).where(eq(claims.id, claimId));
   await refreshAssessment({ ...claim, deliveryContested: true }, order);
   return getClaim(claimId);
@@ -135,13 +148,14 @@ export async function contestDelivery(claimId: string) {
 
 export async function getClaim(claimId: string) {
   const { claim } = await loadClaim(claimId);
-  const [order, [shipment], photos] = await Promise.all([
+  const [order, [shipment], photos, resolution] = await Promise.all([
     db().select({ paypalOrderId: orders.paypalOrderId }).from(orders).where(eq(orders.id, claim.orderId)).then(([r]) => getOrder(r.paypalOrderId)),
     db().select().from(shipments).where(eq(shipments.orderId, claim.orderId)),
     db().select({ id: evidence.id, photoPath: evidence.photoPath, phash: evidence.phash, visionResult: evidence.visionResult, fraudSignals: evidence.fraudSignals, createdAt: evidence.createdAt })
       .from(evidence).where(eq(evidence.claimId, claimId)).orderBy(desc(evidence.createdAt)),
+    resolutionOf(claimId),
   ]);
-  return { ...claim, order, shipment: shipment ?? null, evidence: photos, assessment: (photos[0]?.fraudSignals as Assessment | undefined) ?? null };
+  return { ...claim, order, shipment: shipment ?? null, evidence: photos, assessment: (photos[0]?.fraudSignals as Assessment | undefined) ?? null, ...resolution };
 }
 
 export async function getEvidencePhoto(evidenceId: string) {

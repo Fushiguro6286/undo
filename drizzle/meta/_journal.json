@@ -15,6 +15,13 @@
       "when": 1793768809965,
       "tag": "0001_claims_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793798115786,
+      "tag": "0002_audit_payload",
+      "breakpoints": true
     }
   ]
 }

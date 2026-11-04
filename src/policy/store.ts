@@ -1,5 +1,6 @@
 // Versioned, merchant-approved policies. A compiled draft is stored unapproved; the latest approved one is active.
 import { desc, eq, isNotNull, max, and, isNull } from "drizzle-orm";
+import { audit } from "../audit/log";
 import { db } from "../db";
 import { policies } from "../db/schema";
 import { compilePolicy, diffPolicy } from "./compiler";
@@ -40,6 +41,7 @@ export async function approvePolicy(id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw new PolicyError(`unknown policy ${id}`);
   const [row] = await db().update(policies).set({ approvedAt: new Date() }).where(and(eq(policies.id, id), eq(policies.merchantId, MERCHANT_ID), isNull(policies.approvedAt))).returning();
   if (!row) throw new PolicyError(`policy ${id} does not exist or is already approved`);
+  await audit(null, "POLICY_APPROVED", { policyId: row.id, version: row.version, rules: row.rules });
   return { id: row.id, version: row.version, approvedAt: row.approvedAt };
 }
 

@@ -47,3 +47,10 @@ textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); bor
 .policy-text { width: 100%; font: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); resize: vertical; }
 .spaced { margin-top: 20px; }
 .history { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.offers { display: grid; gap: 10px; }
+.offer { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.offer p { margin: 4px 0 0; }
+.offer button, .button-link { flex: none; }
+.button-link { font-weight: 600; padding: 10px 18px; border-radius: 10px; border: 1px solid var(--accent); color: var(--accent); text-decoration: none; text-align: center; }
+.small { font-size: 13px; }
+@media (max-width: 520px) { .offer { flex-direction: column; align-items: stretch; } }

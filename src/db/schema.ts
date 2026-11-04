@@ -130,6 +130,7 @@ export const auditEvents = pgTable("audit_events", {
   seq: bigserial("seq", { mode: "number" }).primaryKey(),
   claimId: uuid("claim_id"),
   event: text("event").notNull(),
+  payload: jsonb("payload").notNull(), // kept so the chain can be re-checked against the facts, and for the claim timeline
   payloadHash: text("payload_hash").notNull(),
   prevHash: text("prev_hash").notNull(),
   hash: text("hash").notNull(),
