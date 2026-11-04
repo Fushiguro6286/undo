@@ -18,7 +18,7 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - [ ] **Day 10, Nov 7:** escalated claims on disputes opened in advance; record the replay
   - [ ] **CHECKPOINT C:** all 6 demo beats run
 - [x] **Day 11, Nov 8:** (done Nov 4; FEATURE FREEZE in effect) 13 eval scenarios and results page. **FEATURE FREEZE** at end of day
-- [ ] **Day 12, Nov 9:** judge mode, README, `npm run seed`, Resolution Extension doc, fallback AG Grid build
+- [x] **Day 12, Nov 9:** (done Nov 5; disputes wait on human) judge mode, README, `npm run seed`, Resolution Extension doc, fallback AG Grid build
 - [ ] **Day 13, Nov 10:** full incognito test on the hosted URL; fix and polish
 - [ ] **Day 14, Nov 11:** video (human); Devpost text and README polish
 - [ ] **Day 15, Nov 12:** buffer; submit by 8 PM IST
@@ -141,3 +141,11 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Pool:** eval and checkpoint scripts use only `judge-pool` orders, so dispute stock is never consumed. About 1 tee, 0-1 jackets and 0-1 DELEGATED orders left; top up before any further live run.
 - **Tests:** 107 pass; build OK.
 - **Still waiting on human (Day 10 / CHECKPOINT C):** the 5 dispute-stock orders are still unapproved (CREATED).
+
+### Nov 5 (Day 12: judge mode and docs)
+- **Done:** `/judge` with three live one-click scenarios (`src/judge.ts`: reserves an unused judge-pool order atomically, opens the claim; the browser then uploads the sample photo and chooses through the public buyer endpoints), banner on every page, sample photos with `UNDO-DEMO`. Per-IP rate limits on every public write route, `/mcp` and the Resolution Extension endpoint (`src/limits.ts`, Postgres fixed window, hashed IPs, 429 + retry-after). Daily LLM spending cap as AI SDK middleware on every model call (`src/llm/spend.ts`; flat $0.01 per call unless `LLM_PRICE_*` are set); a capped day falls back like any LLM failure. Vision cache by photo sha256 (cached fallback; same photo = same findings, no second call). `npm run seed` (pool top-up to 28 tees / 6 jackets / 6 DELEGATED, active policy, dispute-stock warning below 5). Fallback console `/merchant/grid` (plain AG Grid community, same queue/evidence/timeline). Full README (section 22, mermaid diagram, PayPal APIs, AI models, judge mode, known limits). `docs/resolution-extension.md`. Migration `0004` (rate_limits, llm_usage, vision_cache) run locally and on Neon.
+- **Cart API recheck:** PayPal's Cart API response-handling page and the agentic-commerce schema both 404 now (moved again); the extension doc says so and follows the spec + search summaries.
+- **Done-when:** fresh clone + `.env.example`: install, 109 tests and build pass. Hosted `scripts/judge-check.ts`: **ALL PASS**: merchant -> refund 9DM93847XR924664X RESOLVED (155 s incl. webhook), denial -> DENIED (14 s), agent -> payout batch 9HYK6N6HUQDV2 RESOLVED (47 s). Secret scan of full history: every `.env` / `.env.neon` / `.env.local` secret value has 0 hits, no key patterns, only `.env.example` ever committed (gitleaks download was blocked, so this is a git-history grep). `scripts/spikes/day12-check.ts`: rate-limit counter and spend recording PASS.
+- **Neon pool:** 40 judge-pool orders minus the 3 used above.
+- **Not done (human):** 0 open disputes (5 needed); the 5 dispute-stock orders are still unapproved. Judge logins (merchant password, 3 sandbox buyers) go in the Devpost testing instructions, not the public README. `@paypal/agent-toolkit` stays unused (README says why).
+
