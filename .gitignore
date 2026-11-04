@@ -10,3 +10,4 @@ next-env.d.ts
 coverage/
 /scripts/spikes/out/
 .neon
+.vercel
