@@ -164,3 +164,8 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Denials:** PayPal offered no evidence step in 25 min on #1 (INQUIRY: only accept, offer, message, escalate) or #3 (CHARGEBACK UNDER_REVIEW: only provide-supporting-info, later accept-claim). Undo runs only linked steps and supports neither escalate nor provide-supporting-info (feature freeze), so the evidence-pack-in-PayPal path is not shown live; the pack itself is downloadable on denied claims. #1, #2, #3 and #5 stay open as spares; re-check later in case PayPal offers evidence.
 - **CHECKPOINT C:** beats 1-5 passed on hosted (Checkpoint B, Day 9, Day 13 runs); beat 6 = this replay + `/evals` + the README's PayPal API list.
 
+### Nov 5 (Day 14: video script, captions, Devpost draft)
+- **Done:** `DEMO.md`: six beats timed to 2:55 (30/35/25/25/40/20 s) with exact clicks, holds, where to cut waits, narration (under 2.2 words/s), a fix-it table and known issues. `scripts/demo-prep.ts` reserves the beat 2 tee order and opens the beat 5 $120 jacket claim at OFFERED (last run: order 4KP36830SL452453B; claim 62390808-b163-40f5-8a2f-1e25f3709db0, MERCHANT, keep-it $36). `docs/captions.srt` (44 captions, max 12 words, generated from DEMO.md by `scripts/make-captions.ts`). `docs/DEVPOST.md`: every Devpost field, PayPal APIs, AI tools table, measured results only, links, a private testing-instructions block.
+- **Links:** demo, /judge, /evals, /merchant return 200. GitHub links 404 until the repo is public (it is PRIVATE; MIT is detected).
+- **Waiting on human:** record and edit the video (≤ 2:55), upload public to YouTube, put its link in DEVPOST.md; fill the logins in the private testing field; make the repo public; save the Devpost draft.
+
