@@ -54,7 +54,9 @@ check(!c.error && /^UNDO-/.test(c.body.challenge_code) && !!c.body.upload_url, "
 // The person uploads the photo on the claim page (here: the same endpoint the page uses).
 const form = new FormData();
 form.append("photo", new Blob([readFileSync("public/samples/wrong-color.jpg")], { type: "image/jpeg" }), "wrong-color.jpg");
-await fetch(`${BASE}/api/claims/${c.body.claim_id}/evidence`, { method: "POST", body: form });
+const up = await fetch(`${BASE}/api/claims/${c.body.claim_id}/evidence`, { method: "POST", body: form });
+const upBody = await up.json().catch(() => ({}));
+check(up.ok && upBody.status === "OFFERED", "photo upload gives a ruling", `${up.status} ${upBody.status ?? upBody.error} ${upBody.faultParty ?? ""}`);
 
 const s = await call("claim_status", { claim_id: c.body.claim_id });
 const keep = s.body.resolution_options?.find((r: { action: string }) => r.action === "PARTIAL_REFUND_KEEP_ITEM");

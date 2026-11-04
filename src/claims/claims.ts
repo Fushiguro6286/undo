@@ -86,10 +86,12 @@ export async function addEvidence(claimId: string, upload: Buffer) {
   }
   const hash = await phash(jpeg);
   let vision: VisionResult | null = null;
-  try {
-    vision = await analyzePhoto(jpeg);
-  } catch (e) {
-    console.error("[vision]", (e as Error).message); // VISION_FAILED: a person reviews it
+  for (let attempt = 1; attempt <= 2 && !vision; attempt++) {
+    try {
+      vision = await analyzePhoto(jpeg);
+    } catch (e) {
+      console.error(`[vision] attempt ${attempt}:`, (e as Error).message); // after 2 failures: VISION_FAILED, a person reviews it
+    }
   }
   const photoMatches = findMatches(hash, [...(await listings()), ...(await earlierClaimPhotos(claimId, isJudgeSample(order)))]);
   const [ev] = await db().insert(evidence).values({ claimId, photoPath: "", photo: jpeg, phash: hash, visionResult: vision, fraudSignals: { photoMatches } }).returning({ id: evidence.id });

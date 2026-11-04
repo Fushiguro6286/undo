@@ -12,7 +12,10 @@ export type FraudSignal =
   | "DELIVERY_DATE_CONTESTED";
 
 export type Assessment = {
-  /** NEEDS_NEW_PHOTO: the challenge code is missing, so no decision is made at all (check 1). */
+  /**
+   * NEEDS_NEW_PHOTO: the challenge code is missing, so no decision is made at all (check 1). When the vision step
+   * itself failed nobody could look for the code, so the claim goes to a person (VISION_FAILED) instead.
+   */
   decision: "NEEDS_NEW_PHOTO" | "READY";
   signals: FraudSignal[];
   /** Check 3: the claim value is above requireReturnAbove, so every remedy needs a return. Not a fraud signal. */
@@ -37,7 +40,7 @@ export function assess(i: AssessInput, minConfidence = MIN_VISION_CONFIDENCE): A
   else if (i.visionConfidence < minConfidence) signals.push("LOW_VISION_CONFIDENCE");
   if (i.deliveryContested) signals.push("DELIVERY_DATE_CONTESTED");
   return {
-    decision: i.codeFound ? "READY" : "NEEDS_NEW_PHOTO",
+    decision: i.codeFound || i.visionConfidence === null ? "READY" : "NEEDS_NEW_PHOTO",
     signals,
     returnRequired: toCents(i.claimValue) > Math.round(i.requireReturnAbove * 100),
     photoMatches: i.photoMatches,

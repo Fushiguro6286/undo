@@ -76,6 +76,8 @@ describe("fraud checks", () => {
     expect(assess({ ...base, visionConfidence: 0.59 }).signals).toEqual(["LOW_VISION_CONFIDENCE"]);
     expect(assess({ ...base, visionConfidence: 0.6 }).signals).toEqual([]);
     expect(assess({ ...base, visionConfidence: null }).signals).toEqual(["VISION_FAILED"]);
+    // A failed vision step can't read the code either: a person reviews it rather than the buyer retaking the photo.
+    expect(assess({ ...base, codeFound: false, visionConfidence: null })).toMatchObject({ decision: "READY", signals: ["VISION_FAILED"] });
     expect(assess({ ...base, deliveryContested: true }).signals).toEqual(["DELIVERY_DATE_CONTESTED"]);
   });
   it("requires a return only above the policy threshold", () => {

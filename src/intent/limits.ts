@@ -15,7 +15,7 @@ export type Limits = z.infer<typeof Limits>;
 
 export type LimitReason = "LIMIT_ITEM_TYPE" | "LIMIT_SIZE" | "LIMIT_COLOR" | "LIMIT_PRICE" | "LIMIT_DEADLINE";
 
-const words = (s: string) => s.toLowerCase().replace(/gray/g, "grey").split(/\s+/).filter(Boolean);
+const words = (s: string) => s.toLowerCase().replace(/gray/g, "grey").split(/[\s\-_]+/).filter(Boolean); // "sky-blue" = "sky blue"
 const isoDay = (d: Date) => d.toISOString().slice(0, 10); // shortcut: dates compared in UTC; fine for a US demo store, revisit for real merchants
 
 /** Every limit the variant breaks. `capturedAt` sets the promised delivery date checked against the deadline. */

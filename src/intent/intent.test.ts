@@ -26,6 +26,9 @@ describe("limits", () => {
   it("matches only the sky blue tee in M", () => {
     expect(matchVariants(limits, oct31).map((v) => v.sku)).toEqual(["TEE-SKYBLUE-M"]);
   });
+  it("treats hyphens in colors as spaces", () => {
+    expect(limitViolations(variantBySku("TEE-SKYBLUE-M")!, { ...limits, color: "sky-blue" }, oct31)).toEqual([]);
+  });
   it("names every broken limit", () => {
     expect(limitViolations(variantBySku("TEE-SKYBLUE-L")!, limits, oct31)).toEqual(["LIMIT_SIZE"]);
     expect(limitViolations(variantBySku("TEE-NAVY-M")!, limits, oct31)).toEqual(["LIMIT_COLOR"]);
