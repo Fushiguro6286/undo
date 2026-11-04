@@ -8,8 +8,8 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - [ ] **Day 2, Oct 30:** store and buyer page; CONFIRMED and DELEGATED checkout (JS SDK v6); Intent Record and `custom_id` hash; webhook verification; AG Studio hello-world (once license arrives)
 - [x] **Day 3, Oct 31:** (done Nov 4; hosted check waits on Render) claim intake, challenge code, vision, photo match, value thresholds
 - [ ] **Day 4, Nov 1:** (code done Nov 4; waits on your policy approval) fault engine; policy compiler and evaluator
-- [ ] **Day 5, Nov 2:** (code done Nov 4; hosted run waits on Vercel + Neon migration) offers, Lane A refunds with request ids, audit log
-  - [ ] **CHECKPOINT A:** scenarios 1, 6 and 11 pass end to end (local: ALL PASS with real sandbox refunds; hosted run pending)
+- [x] **Day 5, Nov 2:** (done Nov 4) offers, Lane A refunds with request ids, audit log
+  - [x] **CHECKPOINT A:** scenarios 1, 6 and 11 pass end to end (hosted, Nov 4)
 - [ ] **Day 6, Nov 3:** MCP server; Claude Desktop end to end
 - [ ] **Day 7, Nov 4:** AG Studio console, theme, approval queue, evidence viewer with the audit badge
 - [ ] **Day 8, Nov 5:** claim timeline widget, minimal Studio agent, blocked proposal → queue → one-tap approval
@@ -73,3 +73,9 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Not verified yet:** `PAYMENT.CAPTURE.REFUNDED` webhook (needs the hosted URL + `PAYPAL_WEBHOOK_ID`); claims stay `REFUND_SENT` until it arrives. PayPal's Cart API docs pages moved (404), so the extension's issue fields follow the spec + search summaries; recheck on Day 12.
 - **Waiting on human:** run the Neon migration (`0002`), deploy to Vercel with env vars, set the webhook to `{url}/api/webhooks/paypal`, then run `scripts/checkpoint-a.ts {url}` against hosted. Policy v2 still unapproved.
 - **Next:** Day 6: MCP server; Claude Desktop end to end.
+
+### Nov 4 (hosting on Vercel + Neon; Checkpoint A hosted)
+- **Setup:** Neon CLI 8.18.0 signed in, Neon plugin installed for Claude Code. Vercel CLI 65.11.0 linked to project `undo` (https://undo-nu.vercel.app); GitHub repo already connected, so every push to `main` deploys to production. 17 env vars in Vercel Production (secrets stored as Secret type; `DATABASE_URL` = Neon pooled URL; generated `JUDGE_LOGIN_PASSWORD`, also in local `.env`; `PAYPAL_WEBHOOK_ID` 96D92963V43714717). Preview environment has no env vars yet. Neon migrated through `0002` (by the human). `.vercelignore` added after a CLI deploy uploaded local `.env` files into that deployment's (owner-only) source; production now serves a Git deploy.
+- **Env loading:** sourcing `.env` in bash fails (a value isn't shell-safe); scripts against Neon use `npx tsx --env-file=.env --env-file=.env.neon <script>` (later file wins).
+- **Neon pool:** 6 Sky Blue M tees + 2 Olive M jackets seeded by test card.
+- **Checkpoint A, hosted:** ALL PASS: #1 refund 2E429117X0390942B COMPLETED 27.2 s from claim, `PAYMENT.CAPTURE.REFUNDED` webhook verified and confirmed it at **56.7 s from claim**; retry returned the same refund; PayPal shows one refund. #6 denied with escalate link. #11 BLOCK `OVER_CAPTURE`. Audit chain verifies (18 events). This also completes spike S9 (webhook signature verification with a real sandbox event).
