@@ -20,6 +20,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.93",
     "@ai-sdk/google": "^4.0.109",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@neon/config": "^1.10.1",
     "@neon/env": "^1.6.9",
     "ai": "^7.0.158",

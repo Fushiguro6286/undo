@@ -26,6 +26,7 @@ export const orders = pgTable("orders", {
   amount: money("amount"),
   currency: text("currency").notNull().default("USD"),
   chosenItem: jsonb("chosen_item"),
+  agentPickSku: text("agent_pick_sku"), // DELEGATED via MCP: the agent's pick, captured right after the buyer approves the ceiling
   promisedBy: timestamp("promised_by", { withTimezone: true }),
   status: text("status").notNull(),
   pool: boolean("pool").notNull().default(false),

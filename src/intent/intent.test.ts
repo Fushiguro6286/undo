@@ -30,7 +30,7 @@ describe("limits", () => {
     expect(limitViolations(variantBySku("TEE-SKYBLUE-L")!, limits, oct31)).toEqual(["LIMIT_SIZE"]);
     expect(limitViolations(variantBySku("TEE-NAVY-M")!, limits, oct31)).toEqual(["LIMIT_COLOR"]);
     expect(limitViolations(variantBySku("JACKET-OLIVE-M")!, limits, oct31)).toEqual(["LIMIT_ITEM_TYPE", "LIMIT_COLOR", "LIMIT_PRICE"]);
-    expect(limitViolations(variantBySku("TEE-SKYBLUE-M")!, { ...limits, deadline: "2026-11-02" }, oct31)).toEqual(["LIMIT_DEADLINE"]);
+    expect(limitViolations(variantBySku("TEE-SKYBLUE-M")!, { ...limits, deadline: "2026-11-01" }, oct31)).toEqual(["LIMIT_DEADLINE"]);
   });
   it("treats null limits as unrestricted", () => {
     const open: Limits = { item: "tee", size: null, color: "blue", max_price: null, deadline: null };

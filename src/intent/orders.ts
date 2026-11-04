@@ -19,7 +19,10 @@ export class CheckoutError extends Error {}
  */
 type PoolCard = { name: string; number: string; expiry: string; security_code: string };
 
-export async function createCheckout(mode: IntentRecord["mode"], buyerRef: string, limits: Limits, cart: CartLine[] | null, pool?: { card: PoolCard }) {
+/** For agents that can't show the JS SDK button: PayPal redirects the buyer back here after approving. */
+type ReturnLinks = { returnUrl: string; cancelUrl: string };
+
+export async function createCheckout(mode: IntentRecord["mode"], buyerRef: string, limits: Limits, cart: CartLine[] | null, pool?: { card: PoolCard }, links?: ReturnLinks) {
   const record: IntentRecord = { id: randomUUID(), buyer_ref: buyerRef, mode, limits, cart: mode === "CONFIRMED" ? cart : null, created_at: new Date().toISOString() };
   const hash = intentHash(record);
   let body;
@@ -29,6 +32,7 @@ export async function createCheckout(mode: IntentRecord["mode"], buyerRef: strin
     throw new CheckoutError((e as Error).message);
   }
   if (pool) body = { ...body, payment_source: { card: pool.card } } as unknown as typeof body;
+  if (links && !pool) Object.assign(body.payment_source.paypal.experience_context, { return_url: links.returnUrl, cancel_url: links.cancelUrl });
   const order = await merchant().request("POST", "/v2/checkout/orders", { requestId: `${record.id}:create`, body });
   const amount = body.purchase_units[0].amount.value;
   const cap = order.status === "COMPLETED" ? order.purchase_units?.[0]?.payments?.captures?.[0] : undefined;
@@ -40,13 +44,15 @@ export async function createCheckout(mode: IntentRecord["mode"], buyerRef: strin
       paypalIntent: body.intent,
       ceiling: mode === "DELEGATED" ? amount : null,
       amount: cap?.amount.value ?? (mode === "CONFIRMED" ? amount : null),
-      status: cap?.status === "COMPLETED" ? "COMPLETED" : "CREATED",
+      status: cap?.status === "COMPLETED" ? "COMPLETED" : "CREATED", // PAYER_ACTION_REQUIRED is stored as CREATED too: waiting for the buyer
       captureId: cap?.id ?? null,
       promisedBy: cap ? promisedBy(new Date()) : null,
       pool: !!pool,
     });
   });
-  return { orderId: order.id as string, hash };
+  // With return links PayPal answers PAYER_ACTION_REQUIRED and a payer-action link (spike S10): consent happens there.
+  const approveUrl = (order.links as { rel: string; href: string }[] | undefined)?.find((l) => l.rel === "payer-action" || l.rel === "approve")?.href;
+  return { orderId: order.id as string, hash, approveUrl };
 }
 
 export async function getOrder(paypalOrderId: string) {
@@ -58,7 +64,7 @@ export async function getOrder(paypalOrderId: string) {
 /** After the buyer approves on PayPal: CONFIRMED orders are captured, DELEGATED orders are authorized. */
 export async function completeApproval(paypalOrderId: string) {
   const o = await getOrder(paypalOrderId);
-  if (o.status !== "CREATED") return o; // already done (retry or webhook got there first)
+  if (o.status !== "CREATED") return o; // already done (retry, page reload, or webhook got there first)
   if (o.paypalIntent === "CAPTURE") {
     const cap = await captureOrder(paypalOrderId);
     const now = new Date();

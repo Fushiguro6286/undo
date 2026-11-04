@@ -1,7 +1,7 @@
 // The fictional demo store (invented brand, no real products). Prices are PayPal-style decimal strings.
 
 export const STORE_NAME = "Fernleaf Goods";
-export const PROMISE_DAYS = 3; // promised_by = capture time + 3 days
+export const PROMISE_DAYS = 2; // promised_by = capture time + 2 days (so the demo ask "by Friday" works from midweek)
 
 export type Product = { id: string; type: string; name: string; price: string; colors: string[]; sizes: string[] };
 export type Variant = { sku: string; productId: string; type: string; name: string; color: string; size: string; price: string };

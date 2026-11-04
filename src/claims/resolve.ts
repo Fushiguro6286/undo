@@ -121,8 +121,12 @@ const NEEDS_PERSON: Record<string, string> = { QUEUE: "QUEUED", HUMAN_REVIEW: "I
 /** The buyer (or their agent) picks one rule-made offer. An amount that was never offered is rejected. */
 export async function chooseOffer(claimId: string, offerId: string, requestedAmount?: string) {
   const c = await context(claimId);
-  const [offer] = await db().select().from(offers).where(and(eq(offers.id, offerId), eq(offers.claimId, claimId)));
-  if (!offer) throw new ClaimError("that offer does not belong to this claim");
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(offerId);
+  const [offer] = isUuid ? await db().select().from(offers).where(and(eq(offers.id, offerId), eq(offers.claimId, claimId))) : [];
+  if (!offer) {
+    await audit(claimId, "CHOICE_REJECTED", { offerId, reason: "OFFER_NOT_FOUND" });
+    throw new ClaimError("that offer does not exist on this claim; choose one of the claim's resolution_options");
+  }
   if (requestedAmount !== undefined && (offer.amount === null || fromCents(Math.round(Number(requestedAmount) * 100)) !== offer.amount)) {
     await audit(claimId, "CHOICE_REJECTED", { offerId, requestedAmount, offeredAmount: offer.amount, reason: "AMOUNT_NOT_OFFERED" });
     throw new ClaimError(`amount ${requestedAmount} was never offered; choose an offer as it stands`);
