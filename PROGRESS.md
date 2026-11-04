@@ -12,7 +12,7 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
   - [x] **CHECKPOINT A:** scenarios 1, 6 and 11 pass end to end (hosted, Nov 4)
 - [ ] **Day 6, Nov 3:** (code done + hosted check Nov 4; waits on the Claude Desktop run) MCP server; Claude Desktop end to end
 - [x] **Day 7, Nov 4:** (done locally; hosted check pending) AG Studio console, theme, approval queue, evidence viewer with the audit badge
-- [ ] **Day 8, Nov 5:** claim timeline widget, minimal Studio agent, blocked proposal → queue → one-tap approval
+- [x] **Day 8, Nov 5:** (done Nov 4; CHECKPOINT B passes on hosted) claim timeline widget, minimal Studio agent, blocked proposal → queue → one-tap approval
   - [ ] **CHECKPOINT B:** demo beats 1, 2, 4 and 5 run on the hosted URL
 - [ ] **Day 9, Nov 6:** agent-fault payout, Escalate to PayPal link, `TRANSACTION_DISPUTED` guard, "respond in PayPal" queue state
 - [ ] **Day 10, Nov 7:** escalated claims on disputes opened in advance; record the replay
@@ -95,3 +95,14 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Done-when (local, real sandbox):** $120 jacket claim -> keep-it $36 queued; edit to $100 blocked in the console (`KEEP_ITEM_OVER_MAX_PCT`, original stays queued); edit to $30 -> refund 0S526827R2628481F sent, confirmed by the PAYMENT.CAPTURE.REFUNDED webhook -> claim RESOLVED; evidence viewer showed the right photos and reasons; audit chain verified (45 events).
 - **Not done:** no AG Studio AI or Studio agent (Day 8, first on the cut list). The license is a 45-day trial (expires Dec 19); terms for the demo still to be confirmed with AG Grid.
 - **Neon pool:** 1 unused $120 jacket left; top up before Day 8's trust-moment run.
+
+### Nov 4 (Day 8: trust moment, CHECKPOINT B)
+- **Claim timeline widget:** claim -> evidence -> fault -> offers -> decision -> PayPal confirmation, one line per audit-chain event (`consoleData` turns each payload into words on the server; blocked steps in red).
+- **Minimal Studio agent** (AG Studio AI, `AgStudioAiModule` + `createAiHarness` + `directLlmRunner`): primary agent "Claims assistant" with `get_claim` (read-only) and `propose_refund` (drafts only: merchant API -> evaluator -> queue), plus `delegateTo(["lead"])` for AG's built-in agents. The LLM adapter (`src/console/ai.ts`) calls the merchant-only `POST /api/merchant/ai/turn`, which runs one turn through the AI SDK with tools declared without `execute`, so the model only names calls and Studio runs them in the browser. The model key never reaches the browser.
+- **Trust moment:** a blocked Studio-agent draft now queues the rule-made offer for the same remedy (`queueRuleOffer`), so the merchant approves the policy amount with one tap. Locally in the browser: "Refund it in full" -> agent read the claim, drafted a $120 keep-it refund -> `KEEP_ITEM_OVER_MAX_PCT` -> $36 queued as the agent's proposal -> one tap -> refund 2SB47580WP052840D -> webhook -> RESOLVED.
+- **Fix:** buyers only ever see rule-made offers (merchant and agent proposals were leaking into the buyer's offer list).
+- **Console modes:** Work (view), Assistant (edit mode with only the AI panel; Studio offers the AI panel in edit mode only), Edit layout. Fixed a render loop: the `modules` array passed to `AgStudioProvider` must be one constant.
+- **CHECKPOINT B (hosted, `scripts/checkpoint-b.ts`): ALL PASS** (13 checks). Beat 1: MCP approval URL; PayPal `custom_id` = intent hash. Beat 2: navy tee -> MERCHANT -> agent picks keep-it -> refund 0SJ774719K141712P confirmed 92 s from claim. Beat 4: "my agent bought this" -> BUYER, intent hash verified, denied with Escalate to PayPal. Beat 5: $120 jacket -> agent-style $120 draft blocked -> $36 queued -> one tap -> refund 0MU24685DX707905S confirmed 133 s from claim; console timeline and audit chain (76 events) verified. The PayPal approval click (beat 1) and the agent's LLM drafting are UI steps: the human checks them in Claude Desktop and on `/merchant` (Assistant mode).
+- **Known limits:** Gemini free tier: about 20 s per agent turn, and one `propose_purchase` call failed once (the retry passed). AG's built-in agents (charts and layout) did not complete a chart with `gemini-3.5-flash-lite` and returned no summary; the chart prompt starter is removed and the assistant now says when a handoff can't be confirmed. A paid or stronger model (or `LLM_PROVIDER=anthropic`) should fix both.
+- **Neon pool:** 3 jackets and about 3 tees unused.
+- **Waiting on human:** try Assistant mode on hosted `/merchant` ("Refund it in full" on a jacket claim); the Claude Desktop run; the AG license terms.
