@@ -10,7 +10,7 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - [ ] **Day 4, Nov 1:** (code done Nov 4; waits on your policy approval) fault engine; policy compiler and evaluator
 - [x] **Day 5, Nov 2:** (done Nov 4) offers, Lane A refunds with request ids, audit log
   - [x] **CHECKPOINT A:** scenarios 1, 6 and 11 pass end to end (hosted, Nov 4)
-- [ ] **Day 6, Nov 3:** MCP server; Claude Desktop end to end
+- [ ] **Day 6, Nov 3:** (code done + hosted check Nov 4; waits on the Claude Desktop run) MCP server; Claude Desktop end to end
 - [ ] **Day 7, Nov 4:** AG Studio console, theme, approval queue, evidence viewer with the audit badge
 - [ ] **Day 8, Nov 5:** claim timeline widget, minimal Studio agent, blocked proposal → queue → one-tap approval
   - [ ] **CHECKPOINT B:** demo beats 1, 2, 4 and 5 run on the hosted URL
@@ -79,3 +79,12 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Env loading:** sourcing `.env` in bash fails (a value isn't shell-safe); scripts against Neon use `npx tsx --env-file=.env --env-file=.env.neon <script>` (later file wins).
 - **Neon pool:** 6 Sky Blue M tees + 2 Olive M jackets seeded by test card.
 - **Checkpoint A, hosted:** ALL PASS: #1 refund 2E429117X0390942B COMPLETED 27.2 s from claim, `PAYMENT.CAPTURE.REFUNDED` webhook verified and confirmed it at **56.7 s from claim**; retry returned the same refund; PayPal shows one refund. #6 denied with escalate link. #11 BLOCK `OVER_CAPTURE`. Audit chain verifies (18 events). This also completes spike S9 (webhook signature verification with a real sandbox event).
+
+### Nov 4 (Day 6: MCP buyer agent)
+- **Done:** `src/mcp/server.ts` + `app/mcp/route.ts`: MCP over streamable HTTP, stateless (fresh server + `WebStandardStreamableHTTPServerTransport` per request, JSON responses) with exactly the five spec tools; none confirms consent or moves money. `get_approval_link` creates the order with `return_url`/`cancel_url` and returns PayPal's `payer-action` URL (spike **S10 PASS**); `/orders/approved` completes the approval (capture or authorize) and `/orders/cancelled` says nothing was bought. DELEGATED via MCP takes an optional `agent_pick_sku`, stored server-side in `orders.agent_pick_sku` (migration `0003`, run on Neon) and captured at its real price right after approval (spec gap: section 14 has no tool for the agent's later pick). `choose_remedy` rejects unknown/made-up option ids and any amount that differs from the offer. README with the Claude Desktop setup (custom connector or `mcp-remote` config).
+- **Fixes found on hosted:** colors with hyphens ("sky-blue") now match; vision retries once and a failed vision step now goes to a person (VISION_FAILED -> UNCLEAR) instead of asking the buyer for a new photo; `PROMISE_DAYS` 3 -> 2 so the demo ask "by Friday" matches from midweek.
+- **Hosted check:** `scripts/mcp-check.ts https://undo-nu.vercel.app` **ALL PASS** (13 checks, real refund 0WA432674L402874W $8.70). 93 tests pass.
+- **Risk:** Gemini free tier timed out once on hosted vision (30 s). Retry added; a paid key removes the risk.
+- **Neon pool:** about 1 unused $29 tee left + 2 jackets; top up before the next hosted run.
+- **Waiting on human:** connect Claude Desktop (README) and run propose -> approve on PayPal -> claim -> upload -> choose.
+- **Next:** Day 7: AG Studio console (license is a trial; confirm terms with AG Grid).
