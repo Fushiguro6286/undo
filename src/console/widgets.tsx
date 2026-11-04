@@ -23,9 +23,12 @@ const subscribe = (f: () => void) => {
   return () => void subs.delete(f);
 };
 export const useConsole = () => useSyncExternalStore(subscribe, () => state, () => state);
+/** The current state outside React (for the Studio agent's tools). */
+export const getConsoleState = () => state;
 
-async function call(path: string, body?: unknown) {
+export async function call(path: string, body?: unknown, signal?: AbortSignal) {
   const res = await fetch(path, {
+    signal,
     method: body === undefined ? "GET" : "POST",
     headers: { "content-type": "application/json", "x-merchant-key": key },
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -41,6 +44,8 @@ export async function login(password: string) {
 }
 export const refresh = () => call("/api/merchant/console").then((data) => set({ data }));
 const select = (claimId: string) => set({ selected: claimId });
+/** The claim the evidence viewer and timeline are showing. */
+export const currentClaim = (s: State = state) => s.data?.claims.find((x) => x.id === s.selected) ?? s.data?.claims.find((x) => x.photoPath) ?? s.data?.claims[0];
 
 async function act(id: string, fn: () => Promise<{ text: string }>) {
   set({ busy: id, notice: undefined });
@@ -92,7 +97,7 @@ function QueueItem({ a, claim }: { a: Approval; claim?: Claim }) {
         <span className={`uc-party uc-${(a.faultParty ?? "none").toLowerCase()}`}>{a.faultParty ?? "No ruling"}</span>
       </header>
       <p className="muted uc-small">
-        {claim?.item?.name ?? "Order"} · paid {money(a.orderAmount)} · order {a.paypalOrderId} · proposed by {a.proposedBy === "system" ? "Undo" : a.proposedBy}
+        {claim?.item?.name ?? "Order"} · paid {money(a.orderAmount)} · order {a.paypalOrderId} · proposed by {a.proposedBy === "studio_agent" ? "Studio agent (AI)" : "Undo"}
       </p>
       {why && <p className="uc-small">{why}</p>}
       {review ? (
@@ -158,7 +163,7 @@ const yesNo = (v: boolean | null | undefined) => (v == null ? "—" : v ? "yes" 
 export function EvidenceViewer() {
   const { data, selected } = useConsole();
   if (!data) return <p className="muted uc-pad">Loading…</p>;
-  const c = data.claims.find((x) => x.id === selected) ?? data.claims.find((x) => x.photoPath) ?? data.claims[0];
+  const c = currentClaim({ data, selected });
   if (!c) return <div className="uc-widget"><AuditBadge audit={data.audit} /><p className="muted">No claims yet.</p></div>;
   const v = c.vision;
   return (
@@ -197,6 +202,33 @@ export function EvidenceViewer() {
         </dl>
       )}
       {c.description && <p className="uc-small"><span className="muted">Buyer wrote:</span> “{c.description}”</p>}
+    </div>
+  );
+}
+
+const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+const STAGE: Record<string, string> = {
+  CLAIM_OPENED: "claim", EVIDENCE_ADDED: "evidence", FAULT_DECIDED: "fault", OFFERS_CREATED: "offers",
+  REFUND_SENT: "paypal", REFUND_CONFIRMED: "paypal", REPLACEMENT_SHIPPING: "paypal", ESCALATED_TO_PAYPAL: "paypal",
+};
+
+/** Claim -> evidence -> fault -> offers -> decision -> PayPal confirmation, straight from the audit chain. */
+export function ClaimTimeline() {
+  const { data, selected } = useConsole();
+  if (!data) return <p className="muted uc-pad">Loading…</p>;
+  const c = currentClaim({ data, selected });
+  if (!c) return <p className="muted uc-pad">No claims yet.</p>;
+  return (
+    <div className="uc-widget">
+      <p className="muted uc-small">{c.item?.name ?? "Order"} · claim {c.id.slice(0, 8)} · every step below is an entry on the audit chain</p>
+      <ol className="uc-timeline">
+        {c.timeline.map((e) => (
+          <li key={e.seq} className={`uc-step uc-step-${STAGE[e.event] ?? (/BLOCKED|REJECTED/.test(e.event) ? "blocked" : "decision")}`}>
+            <time className="muted">{time(e.at)}</time>
+            <span>{e.text}</span>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

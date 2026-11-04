@@ -167,13 +167,29 @@ export async function proposeRemedy(claimId: string, p: { action: Action; amount
   const verdict = evaluate({ action: p.action, amount, currency: c.order.currency }, c.evalContext(party));
   if (verdict.verdict === "BLOCK") {
     await audit(claimId, "PROPOSAL_BLOCKED", { proposedBy, action: p.action, amount, party, reasons: verdict.reasons });
-    return { verdict: "BLOCK" as const, reasons: verdict.reasons };
+    // A blocked AI draft still reaches a person: the queue gets the amount the store's own rules make for that remedy.
+    const queued = proposedBy === "studio_agent" ? await queueRuleOffer(c, p.action, party) : null;
+    return { verdict: "BLOCK" as const, reasons: verdict.reasons, queued };
   }
   const draft: OfferDraft = { action: p.action, amount, currency: c.order.currency, ruleIds: [`proposed_by:${proposedBy}`], label: "Proposed remedy", verdict: verdict.verdict };
   const [offer] = await db().insert(offers).values({ claimId, action: p.action, amount, currency: draft.currency, ruleIds: draft.ruleIds, explanation: { ...templateExplanation(draft, party), label: draft.label, verdict: draft.verdict, party } }).returning({ id: offers.id });
   const [a] = await db().insert(approvals).values({ claimId, offerId: offer.id, proposedBy, status: "PENDING" }).returning({ id: approvals.id });
   await audit(claimId, "PROPOSAL_QUEUED", { proposedBy, approvalId: a.id, offerId: offer.id, action: p.action, amount, party, verdict: verdict.verdict });
   return { verdict: verdict.verdict, reasons: verdict.reasons, approvalId: a.id };
+}
+
+const isProposal = (o: { ruleIds: unknown }) => ((o.ruleIds as string[] | null) ?? []).some((r) => r.startsWith("proposed_by:"));
+
+/** The rule-made offer for `action` that passes the evaluator, queued for approval (or the one already queued). */
+async function queueRuleOffer(c: Awaited<ReturnType<typeof context>>, action: Action, party: FaultParty) {
+  const rows = await db().select().from(offers).where(and(eq(offers.claimId, c.claim.id), eq(offers.action, action)));
+  const rule = rows.find((o) => !isProposal(o) && evaluate({ action, amount: o.amount, currency: o.currency }, c.evalContext(party)).verdict !== "BLOCK");
+  if (!rule) return null;
+  const [pending] = await db().select({ id: approvals.id }).from(approvals).where(and(eq(approvals.offerId, rule.id), eq(approvals.status, "PENDING")));
+  if (pending) return { approvalId: pending.id, action, amount: rule.amount };
+  const [a] = await db().insert(approvals).values({ claimId: c.claim.id, offerId: rule.id, proposedBy: "studio_agent", status: "PENDING" }).returning({ id: approvals.id });
+  await audit(c.claim.id, "PROPOSAL_QUEUED", { proposedBy: "studio_agent", approvalId: a.id, offerId: rule.id, action, amount: rule.amount, party, rulesAmountAfterBlockedDraft: true });
+  return { approvalId: a.id, action, amount: rule.amount };
 }
 
 /** A person's tap in the approval queue. Approve re-runs the evaluator, then carries out the remedy. */
@@ -257,7 +273,7 @@ export async function resolutionOf(claimId: string) {
     db().select().from(approvals).where(eq(approvals.claimId, claimId)).orderBy(desc(approvals.createdAt)),
     db().select().from(moneyActions).where(eq(moneyActions.claimId, claimId)),
   ]);
-  const proposals = new Set(a.filter((x) => x.proposedBy !== "system").map((x) => x.offerId));
-  return { offers: o.filter((x) => !proposals.has(x.id)), approvals: a, moneyActions: m, escalateUrl: ESCALATE_URL };
+  // The buyer only ever sees rule-made offers, never a merchant's or the Studio agent's proposals.
+  return { offers: o.filter((x) => !isProposal(x)), approvals: a, moneyActions: m, escalateUrl: ESCALATE_URL };
 }
 
