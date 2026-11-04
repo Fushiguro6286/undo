@@ -14,7 +14,7 @@ vi.mock("../paypal/client", async (orig) => {
   return { ...real, merchant: () => ({ request }), agentPlatform: () => ({ request }) };
 });
 
-const { DisputedCaptureError, payoutAgentFault, refundCapture } = await import("./router");
+const { acceptDisputeClaim, DisputedCaptureError, payoutAgentFault, refundCapture } = await import("./router");
 const { PayPalError } = await import("../paypal/client");
 const claimId = "11111111-1111-4111-8111-111111111111";
 
@@ -71,5 +71,17 @@ describe("agent-fault payout", () => {
   it("refuses a zero payout", async () => {
     await expect(payoutAgentFault({ claimId, receiver: "b@example.com", amount: "0.00", version: 1 })).rejects.toThrow(/above zero/);
     expect(request).not.toHaveBeenCalled();
+  });
+});
+
+describe("accepting a dispute claim", () => {
+  it("sends a JSON body with a note and the allowed type, under the versioned request id", async () => {
+    request.mockResolvedValue({});
+    await acceptDisputeClaim({ claimId, disputeId: "PP-D-1", amount: "29", version: 2, acceptType: "REFUND", note: "x".repeat(3000) });
+    const [method, path, opts] = request.mock.calls[0];
+    expect([method, path]).toEqual(["POST", "/v1/customer/disputes/PP-D-1/accept-claim"]);
+    expect(opts.requestId).toBe(`${claimId}:ACCEPT_DISPUTE_CLAIM:2`);
+    expect(opts.form).toBeUndefined(); // an empty multipart body is refused live (400 MISSING_OR_INVALID_REQUEST_BODY)
+    expect(opts.body).toEqual({ note: "x".repeat(2000), accept_claim_type: "REFUND" });
   });
 });

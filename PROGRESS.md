@@ -15,8 +15,8 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - [x] **Day 8, Nov 5:** (done Nov 4; CHECKPOINT B passes on hosted) claim timeline widget, minimal Studio agent, blocked proposal → queue → one-tap approval
   - [ ] **CHECKPOINT B:** demo beats 1, 2, 4 and 5 run on the hosted URL
 - [x] **Day 9, Nov 6:** (done Nov 4; done-when passes on hosted) agent-fault payout, Escalate to PayPal link, `TRANSACTION_DISPUTED` guard, "respond in PayPal" queue state
-- [ ] **Day 10, Nov 7:** escalated claims on disputes opened in advance; record the replay
-  - [ ] **CHECKPOINT C:** all 6 demo beats run
+- [x] **Day 10, Nov 7:** (done Nov 5; evidence-pack path not offered live by PayPal yet) escalated claims on disputes opened in advance; record the replay
+  - [x] **CHECKPOINT C:** all 6 demo beats run (Nov 5; beat 6 = recorded escalated replay)
 - [x] **Day 11, Nov 8:** (done Nov 4; FEATURE FREEZE in effect) 13 eval scenarios and results page. **FEATURE FREEZE** at end of day
 - [x] **Day 12, Nov 9:** (done Nov 5; disputes wait on human) judge mode, README, `npm run seed`, Resolution Extension doc, fallback AG Grid build
 - [x] **Day 13, Nov 10:** (done Nov 5) full incognito test on the hosted URL; fix and polish
@@ -156,4 +156,11 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Hosting check:** Vercel Hobby (serverless, no sleep; per-minute crons not allowed, see Day 9). Neon **free** plan (about 100 CU-hours per project per month per current docs; scale-to-zero): fine for judge traffic, but watch usage or upgrade before Dec 15. AG Studio trial key valid to Dec 19; production-use terms still to confirm with AG Grid. The spec's "paid always-on Render" is replaced by Vercel + Neon (human's call).
 - **Neon pool:** topped back up to 28 tees, 6 jackets, 6 DELEGATED.
 - **Still waiting on human:** the 5 dispute-stock orders are still unapproved (PAYER_ACTION_REQUIRED) and no new disputes are open, so Day 10's replay / CHECKPOINT C remain open (due Nov 7).
+
+### Nov 5 (Day 10 finished: disputes and the escalated replay; CHECKPOINT C)
+- **Dispute stock:** the human paid the 5 orders as a sandbox buyer; `dispute-stock.ts claims` recorded delivery (real PayPal trackers) and filed 3 denial claims (BUYER, DENIED) and 2 merchant-fault claims (offers open). The human opened 5 disputes; all synced and linked to their claims: PP-R-CBD-10196443 (#1, denial, INQUIRY, not as described), PP-R-DFA-10196444 (#2, denial, INQUIRY, not as described), PP-R-THY-10196446 (#3, denial, CHARGEBACK, not received), PP-R-LMM-10196447 (#4, merchant, CHARGEBACK), PP-R-SIQ-10196442 (#5, merchant, CHARGEBACK). PayPal's dispute screen shows the transaction (capture) id, not the order id: `scripts/spikes/stock-captures.ts` maps them.
+- **Fix: accept-claim.** The empty multipart body Undo sent was refused live (400 MISSING_OR_INVALID_REQUEST_BODY; PayPal's OpenAPI lists only an optional file). Now JSON `{ note, accept_claim_type }` with a type from the dispute's `allowed_response_options` (REFUND here); a refused attempt moved no money and the retry gets a new `PayPal-Request-Id` version. Unit test added (110 tests).
+- **Escalated replay (human said go):** #4 PP-R-LMM-10196447: ACCEPT_CLAIM ($29.00) 23:33:43 UTC -> PayPal RESOLVED_BUYER_FAVOUR 23:35:48 (about 2 min). Claim `RESOLVED_BY_PAYPAL`; audit: claim opened -> photo -> fault MERCHANT -> offers -> Respond in PayPal -> claim accepted -> dispute resolved. Recorded in `evals/recordings/dispute-PP-R-LMM-10196447.json` and shown on `/evals` ("Escalated case").
+- **Denials:** PayPal offered no evidence step in 25 min on #1 (INQUIRY: only accept, offer, message, escalate) or #3 (CHARGEBACK UNDER_REVIEW: only provide-supporting-info, later accept-claim). Undo runs only linked steps and supports neither escalate nor provide-supporting-info (feature freeze), so the evidence-pack-in-PayPal path is not shown live; the pack itself is downloadable on denied claims. #1, #2, #3 and #5 stay open as spares; re-check later in case PayPal offers evidence.
+- **CHECKPOINT C:** beats 1-5 passed on hosted (Checkpoint B, Day 9, Day 13 runs); beat 6 = this replay + `/evals` + the README's PayPal API list.
 

@@ -1,0 +1,101 @@
+{
+  "kind": "escalated-claim-replay",
+  "note": "Recorded from real PayPal sandbox calls. require-evidence and adjudicate are sandbox-only steps; adjudicate stands in for PayPal's decision.",
+  "disputeId": "PP-R-LMM-10196447",
+  "claimId": "232d6a2e-b1f3-4a0e-bde0-62b2650a1f3a",
+  "linkedToUndoClaim": true,
+  "startedAt": "2026-11-04T23:33:31.408Z",
+  "finishedAt": "2026-11-04T23:35:48.795Z",
+  "final": {
+    "step": "RESOLVED",
+    "disputeId": "PP-R-LMM-10196447",
+    "status": "RESOLVED",
+    "stage": "CHARGEBACK",
+    "links": [],
+    "detail": {
+      "outcome": "RESOLVED_BUYER_FAVOUR"
+    },
+    "at": "2026-11-04T23:35:48.333Z"
+  },
+  "steps": [
+    {
+      "step": "ACCEPT_CLAIM",
+      "disputeId": "PP-R-LMM-10196447",
+      "status": "UNDER_REVIEW",
+      "stage": "CHARGEBACK",
+      "links": [
+        "accept-claim",
+        "provide-supporting-info"
+      ],
+      "detail": {
+        "amount": "29.00"
+      },
+      "at": "2026-11-04T23:33:43.541Z"
+    },
+    {
+      "step": "WAITING",
+      "disputeId": "PP-R-LMM-10196447",
+      "status": "UNDER_REVIEW",
+      "stage": "CHARGEBACK",
+      "links": [
+        "provide-supporting-info"
+      ],
+      "at": "2026-11-04T23:33:59.827Z"
+    },
+    {
+      "step": "RESOLVED",
+      "disputeId": "PP-R-LMM-10196447",
+      "status": "RESOLVED",
+      "stage": "CHARGEBACK",
+      "links": [],
+      "detail": {
+        "outcome": "RESOLVED_BUYER_FAVOUR"
+      },
+      "at": "2026-11-04T23:35:48.333Z"
+    }
+  ],
+  "auditTimeline": [
+    {
+      "seq": 361,
+      "event": "CLAIM_OPENED",
+      "at": "2026-11-04T22:39:47.508Z",
+      "hash": "65ec40b9bf5b6be9627d22dd9fd7d23dd726cb8f583a0c26382026fc802ab57d"
+    },
+    {
+      "seq": 362,
+      "event": "EVIDENCE_ADDED",
+      "at": "2026-11-04T22:39:48.151Z",
+      "hash": "7c479fdf7e6600736596607989d11202cac434cfd26f31132e64e500d48a9f87"
+    },
+    {
+      "seq": 363,
+      "event": "FAULT_DECIDED",
+      "at": "2026-11-04T22:39:48.350Z",
+      "hash": "f065f28a78def4fc6fdbb06bb98befb63172827c53a9eed567659c28f9a98128"
+    },
+    {
+      "seq": 364,
+      "event": "OFFERS_CREATED",
+      "at": "2026-11-04T22:39:50.018Z",
+      "hash": "e759cbb4530dc68be523e4a6588502d2d584c8e47f3e250898dacdde2b9586cb"
+    },
+    {
+      "seq": 373,
+      "event": "RESPOND_IN_PAYPAL",
+      "at": "2026-11-04T23:02:06.166Z",
+      "hash": "d2ef4082abe723453e5e83f65743e1b2b8447826f5bea74b6cdfdc66cdd2fe3e"
+    },
+    {
+      "seq": 374,
+      "event": "DISPUTE_CLAIM_ACCEPTED",
+      "at": "2026-11-04T23:33:40.961Z",
+      "hash": "e5fb126b4aacdbc87b9a3b6fd6d7a662a9b05c09d5c49e4e2268274bbb4bcc1d"
+    },
+    {
+      "seq": 375,
+      "event": "DISPUTE_RESOLVED",
+      "at": "2026-11-04T23:35:36.237Z",
+      "hash": "e3b9671615532281536533305a390513bb5016b03ebc63a5c55bb12fed917aec"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "kind": "escalated-claim-replay",
+  "note": "Recorded from real PayPal sandbox calls. require-evidence and adjudicate are sandbox-only steps; adjudicate stands in for PayPal's decision.",
+  "disputeId": "PP-R-THY-10196446",
+  "claimId": "637abec9-e175-4fac-8d40-be0ec0a48c51",
+  "linkedToUndoClaim": true,
+  "startedAt": "2026-11-04T23:04:27.417Z",
+  "finishedAt": "2026-11-04T23:29:36.997Z",
+  "final": {
+    "step": "WAITING",
+    "disputeId": "PP-R-THY-10196446",
+    "status": "UNDER_REVIEW",
+    "stage": "CHARGEBACK",
+    "links": [
+      "provide-supporting-info"
+    ],
+    "at": "2026-11-04T23:04:33.500Z"
+  },
+  "steps": [
+    {
+      "step": "WAITING",
+      "disputeId": "PP-R-THY-10196446",
+      "status": "UNDER_REVIEW",
+      "stage": "CHARGEBACK",
+      "links": [
+        "provide-supporting-info"
+      ],
+      "at": "2026-11-04T23:04:33.500Z"
+    }
+  ],
+  "auditTimeline": [
+    {
+      "seq": 355,
+      "event": "CLAIM_OPENED",
+      "at": "2026-11-04T22:39:41.203Z",
+      "hash": "388062e091964920892b63cf289e07d6a1d6a6b31d59dae997700439815cfa78"
+    },
+    {
+      "seq": 356,
+      "event": "EVIDENCE_ADDED",
+      "at": "2026-11-04T22:39:41.915Z",
+      "hash": "cd4b5bfaa1f493cc826e62b15de23a2138ef322ef100837d71a730387cf36f2f"
+    },
+    {
+      "seq": 357,
+      "event": "FAULT_DECIDED",
+      "at": "2026-11-04T22:39:42.114Z",
+      "hash": "7f7f4cb327cdc8c006b8cc198d04f8e59539d1a5957b636d33161809fdf28bb5"
+    },
+    {
+      "seq": 358,
+      "event": "OFFERS_CREATED",
+      "at": "2026-11-04T22:39:43.922Z",
+      "hash": "19e7ac02aac4acbad45f11a5f63ee087cefd8ee454466dbb7db0daf89f22dc34"
+    },
+    {
+      "seq": 359,
+      "event": "OFFER_CHOSEN",
+      "at": "2026-11-04T22:39:44.934Z",
+      "hash": "1ea0fed1c0633422acf11392f4c922b1388dbd6835dc12370c36e98423030579"
+    },
+    {
+      "seq": 360,
+      "event": "CLAIM_DENIED",
+      "at": "2026-11-04T22:39:45.025Z",
+      "hash": "2b6491b70dd8c552a6c71347b56fcb2d0ec3a69199e0351a184d05e4e7ce1fd9"
+    },
+    {
+      "seq": 372,
+      "event": "RESPOND_IN_PAYPAL",
+      "at": "2026-11-04T23:01:05.794Z",
+      "hash": "0853de236b4981d12e586e4bc745df42f5f3257b2e813d17764e482699694759"
+    }
+  ]
+}

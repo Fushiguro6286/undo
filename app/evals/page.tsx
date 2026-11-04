@@ -1,5 +1,6 @@
 // Measured eval results (spec section 17), from evals/results.json written by `npm run eval`. Nothing here is estimated.
 import results from "@/evals/results.json";
+import escalated from "@/evals/recordings/dispute-PP-R-LMM-10196447.json";
 
 export const metadata = { title: "Evals · Undo" };
 
@@ -20,6 +21,14 @@ function Tile({ label, value, note }: { label: string; value: string; note?: str
     </div>
   );
 }
+
+// The recorded escalated case (spec section 13): real PayPal sandbox ids and times from scripts/escalated-run.ts.
+const EVENT_TEXT: Record<string, string> = {
+  CLAIM_OPENED: "Claim opened in Undo", EVIDENCE_ADDED: "Photo checked", FAULT_DECIDED: "Fault: merchant (wrong color)", OFFERS_CREATED: "Remedies offered by the store's rules",
+  RESPOND_IN_PAYPAL: "Buyer opened a PayPal dispute instead; Undo stops making offers (Respond in PayPal)", DISPUTE_CLAIM_ACCEPTED: "Store accepted the claim in PayPal ($29.00 refund)", DISPUTE_RESOLVED: "PayPal resolved the case",
+};
+const esc = escalated as { disputeId: string; auditTimeline: { seq: number; event: string; at: string }[]; final: { detail?: { outcome?: string } } | null };
+const hhmmss = (iso: string) => new Date(iso).toISOString().slice(11, 19);
 
 export default function Page() {
   const live = s.live;
@@ -52,6 +61,17 @@ export default function Page() {
           </p>
         </section>
       )}
+
+      <section className="card">
+        <h2>Escalated case (recorded)</h2>
+        <p className="muted small">
+          PayPal dispute <code>{esc.disputeId}</code> on a merchant-fault claim, run against the PayPal sandbox and recorded in{" "}
+          <code>evals/recordings/dispute-{esc.disputeId}.json</code>. Outcome: <strong>{esc.final?.detail?.outcome ?? "pending"}</strong>. Times in UTC; every step is on the audit chain.
+        </p>
+        <ol className="small">
+          {esc.auditTimeline.map((e) => <li key={e.seq}><code>{hhmmss(e.at)}</code> {EVENT_TEXT[e.event] ?? e.event}</li>)}
+        </ol>
+      </section>
 
       <section className="card">
         <h2>Scenarios</h2>

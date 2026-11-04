@@ -108,12 +108,14 @@ export async function payoutAgentFault(r: { claimId: string; receiver: string; a
  * a person's tap. PayPal documents a multipart body with one optional file (accept-claim-document); the accepted
  * response options come from the dispute's allowed_response_options, so nothing else is sent.
  */
-export async function acceptDisputeClaim(r: { claimId: string; disputeId: string; amount: string; version: number }) {
+export async function acceptDisputeClaim(r: { claimId: string; disputeId: string; amount: string; version: number; acceptType: string; note: string }) {
   const requestId = moneyRequestId(r.claimId, "ACCEPT_DISPUTE_CLAIM", r.version);
   const value = fromCents(toCents(r.amount));
   await db().insert(moneyActions).values({ claimId: r.claimId, lane: "DISPUTE", kind: "refund", requestId, amount: value, status: "SENDING" }).onConflictDoNothing();
   try {
-    await merchant().request("POST", `/v1/customer/disputes/${encodeURIComponent(r.disputeId)}/accept-claim`, { requestId, form: new FormData() });
+    // The live API refuses an empty body (400 MISSING_OR_INVALID_REQUEST_BODY, Nov 5); PayPal's reference docs take
+    // JSON with a note and one of the dispute's allowed_response_options.accept_claim types.
+    await merchant().request("POST", `/v1/customer/disputes/${encodeURIComponent(r.disputeId)}/accept-claim`, { requestId, body: { note: r.note.slice(0, 2000), accept_claim_type: r.acceptType } });
     await db().update(moneyActions).set({ paypalRef: r.disputeId, status: "ACCEPTED" }).where(eq(moneyActions.requestId, requestId));
     return { disputeId: r.disputeId, amount: value, requestId };
   } catch (e) {

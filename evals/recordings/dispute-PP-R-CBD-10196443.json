@@ -1,0 +1,81 @@
+{
+  "kind": "escalated-claim-replay",
+  "note": "Recorded from real PayPal sandbox calls. require-evidence and adjudicate are sandbox-only steps; adjudicate stands in for PayPal's decision.",
+  "disputeId": "PP-R-CBD-10196443",
+  "claimId": "f1c322ac-6f59-474d-986b-083486a3fc1b",
+  "linkedToUndoClaim": true,
+  "startedAt": "2026-11-04T23:01:08.150Z",
+  "finishedAt": "2026-11-04T23:26:13.265Z",
+  "final": {
+    "step": "WAITING",
+    "disputeId": "PP-R-CBD-10196443",
+    "status": "WAITING_FOR_SELLER_RESPONSE",
+    "stage": "INQUIRY",
+    "links": [
+      "accept-claim",
+      "send-message",
+      "escalate",
+      "make-offer"
+    ],
+    "at": "2026-11-04T23:01:14.112Z"
+  },
+  "steps": [
+    {
+      "step": "WAITING",
+      "disputeId": "PP-R-CBD-10196443",
+      "status": "WAITING_FOR_SELLER_RESPONSE",
+      "stage": "INQUIRY",
+      "links": [
+        "accept-claim",
+        "send-message",
+        "escalate",
+        "make-offer"
+      ],
+      "at": "2026-11-04T23:01:14.112Z"
+    }
+  ],
+  "auditTimeline": [
+    {
+      "seq": 343,
+      "event": "CLAIM_OPENED",
+      "at": "2026-11-04T22:39:27.481Z",
+      "hash": "734e6bfc73399e0ed2b58d086563e5d22c1c05e756010446cf56193ce17b2813"
+    },
+    {
+      "seq": 344,
+      "event": "EVIDENCE_ADDED",
+      "at": "2026-11-04T22:39:28.798Z",
+      "hash": "96b34b0ff027216861102334ca244dbe957fbbbf70d0a42f3e62f42fdbde3298"
+    },
+    {
+      "seq": 345,
+      "event": "FAULT_DECIDED",
+      "at": "2026-11-04T22:39:28.964Z",
+      "hash": "01642a0168a9344e87a4af6837e714f41c55f0fc8858970ea24bbff5faff503c"
+    },
+    {
+      "seq": 346,
+      "event": "OFFERS_CREATED",
+      "at": "2026-11-04T22:39:30.624Z",
+      "hash": "da47a968f016c158bbd8be25759126a3af0972b8d42b95ab8b124251f55126fe"
+    },
+    {
+      "seq": 347,
+      "event": "OFFER_CHOSEN",
+      "at": "2026-11-04T22:39:31.741Z",
+      "hash": "dc5dc9866d8df5b41e436d2422049d2a5ddee65ae77a61225d4d8ea5179d4a74"
+    },
+    {
+      "seq": 348,
+      "event": "CLAIM_DENIED",
+      "at": "2026-11-04T22:39:31.835Z",
+      "hash": "8c3b0c46a306474ef9f757a3c47e3ef0c2162e4784a33ca8342a7148a00cd5f4"
+    },
+    {
+      "seq": 370,
+      "event": "RESPOND_IN_PAYPAL",
+      "at": "2026-11-04T22:58:36.495Z",
+      "hash": "7d1b2aada9a864ec1f5ce274f3d6896db88119af57b16757f770e8866944c290"
+    }
+  ]
+}

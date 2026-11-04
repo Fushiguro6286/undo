@@ -2,7 +2,7 @@
 // links offer, in the sandbox order: require-evidence (sandbox-only) -> provide-evidence with the evidence pack, or
 // accept-claim when the merchant is at fault -> adjudicate (sandbox-only). PayPal moves the case in between
 // (about 1-3 minutes per transition, spike S8), so callers advance again later.
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, like, ne } from "drizzle-orm";
 import { audit } from "../audit/log";
 import { db } from "../db";
 import { approvals, claims, disputes, moneyActions } from "../db/schema";
@@ -52,7 +52,12 @@ export async function advanceDispute(disputeId: string, decidedBy: string, opts:
   const merchantPays = claim && MERCHANT_PAYS.includes(claim.faultParty ?? "");
   if (merchantPays && can("accept-claim")) {
     if (opts.allowAccept === false) return { step: "WAITING", ...base, detail: { needs: "a person's approval to accept the claim (PayPal refunds the buyer)" } };
-    const r = await acceptDisputeClaim({ claimId: claim.id, disputeId, amount: d.dispute_amount?.value ?? "0.00", version: 1 });
+    const types: string[] = d.allowed_response_options?.accept_claim?.accept_claim_types ?? [];
+    const acceptType = types.includes("REFUND") ? "REFUND" : types[0] ?? "REFUND";
+    // A refused attempt never moved money; the next one gets a new request id so PayPal can't replay the refusal.
+    const failed = await db().select({ id: moneyActions.id }).from(moneyActions).where(and(eq(moneyActions.claimId, claim.id), like(moneyActions.requestId, `%:ACCEPT_DISPUTE_CLAIM:%`), eq(moneyActions.status, "FAILED")));
+    const note = `The store accepts this claim. Undo's ruling on claim ${claim.id}: ${claim.faultParty} at fault (${((claim.reasons ?? []) as { code: string }[]).map((x) => x.code).join(", ")}).`;
+    const r = await acceptDisputeClaim({ claimId: claim.id, disputeId, amount: d.dispute_amount?.value ?? "0.00", version: failed.length + 1, acceptType, note });
     await used();
     await settleClaim(claim.id, "ESCALATED", decidedBy);
     await log("DISPUTE_CLAIM_ACCEPTED", { amount: r.amount, requestId: r.requestId, decidedBy, faultParty: claim.faultParty });
