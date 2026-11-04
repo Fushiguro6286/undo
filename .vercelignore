@@ -1,0 +1,7 @@
+# Never upload local secrets with `vercel` CLI deploys (Git deploys only see tracked files anyway).
+.env
+.env.*
+!.env.example
+.neon
+.vercel
+/scripts/spikes/out/
