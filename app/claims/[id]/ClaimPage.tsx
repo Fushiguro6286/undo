@@ -37,6 +37,8 @@ const STATUS_TEXT: Record<string, string> = {
   PAYOUT_SENT: "Your agent's platform is paying you back through PayPal. Waiting for PayPal's confirmation.",
   PAYOUT_FAILED: "The payout from your agent's platform did not go through. A person at the store will follow up.",
   RESPOND_IN_PAYPAL: "This payment is disputed in PayPal, so PayPal decides it. Undo will not send a separate refund.",
+  ANSWERED_IN_PAYPAL: "The store answered your PayPal case with its records. PayPal makes the final decision.",
+  RESOLVED_BY_PAYPAL: "PayPal decided this case.",
 };
 
 const SIGNAL_TEXT: Record<string, string> = {
@@ -163,6 +165,7 @@ export function ClaimPage({ id }: { id: string }) {
               {refund && <p className="muted">Refund ${refund.amount} · PayPal refund <code>{refund.paypalRef ?? "pending"}</code> · {refund.status === "CONFIRMED" ? "confirmed by PayPal" : `PayPal status ${refund.status}`}</p>}
               {payout && <p className="muted">Paid by your agent&apos;s platform: ${payout.amount} · PayPal payout <code>{payout.paypalRef ?? "pending"}</code> · {payout.status === "CONFIRMED" ? "confirmed by PayPal" : `PayPal status ${payout.status}`}</p>}
               {claim.offers.filter((o) => o.chosen).map((o) => <p key={o.id} className="muted">You chose: {o.explanation?.label ?? o.action}{o.amount ? ` ($${o.amount})` : ""}</p>)}
+              {["DENIED", "ESCALATED", "RESPOND_IN_PAYPAL"].includes(claim.status) && <p className="muted"><a href={`/api/claims/${claim.id}/evidence-pack`}>Download an evidence pack</a> (PDF: every statement cites your PayPal order, approval and photo) to file in PayPal yourself.</p>}
               {claim.status === "RESPOND_IN_PAYPAL" && <p><a href={claim.escalateUrl} target="_blank" rel="noreferrer">Open PayPal&apos;s Resolution Center</a></p>}
               {claim.status === "DENIED" && <p>Disagree? PayPal stays the final arbiter: <a href={claim.escalateUrl} target="_blank" rel="noreferrer">take it to PayPal&apos;s Resolution Center</a>.</p>}
             </>

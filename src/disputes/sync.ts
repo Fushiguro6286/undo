@@ -2,7 +2,8 @@
 // list lags at first, so known open ids are re-fetched too: spike S8). An open dispute on a claim's capture puts
 // the claim in the approval queue as "respond in PayPal". Pending agent payouts are settled on the same poll.
 import { after } from "next/server";
-import { desc, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, notInArray, sql } from "drizzle-orm";
+import { audit } from "../audit/log";
 import { db } from "../db";
 import { claims, disputes, orders } from "../db/schema";
 import { merchant } from "../paypal/client";
@@ -18,7 +19,13 @@ export async function syncDispute(id: string) {
   const row = { stage: d.dispute_life_cycle_stage ?? null, status: d.status ?? null, lastPolled: new Date() };
   await db().insert(disputes).values({ paypalDisputeId: id, claimId: claim?.id ?? null, ...row })
     .onConflictDoUpdate({ target: disputes.paypalDisputeId, set: { ...row, claimId: sql`coalesce(${disputes.claimId}, excluded.claim_id)` } });
-  if (claim && d.status !== "RESOLVED") await respondInPayPal(claim.id, { disputeIds: [id], source: "DISPUTE_SYNC" });
+  const [linked] = await db().select({ claimId: disputes.claimId }).from(disputes).where(eq(disputes.paypalDisputeId, id));
+  if (linked?.claimId && d.status === "RESOLVED") {
+    // PayPal decided: the claim closes with PayPal's outcome (once).
+    const [closed] = await db().update(claims).set({ status: "RESOLVED_BY_PAYPAL" })
+      .where(and(eq(claims.id, linked.claimId), notInArray(claims.status, ["RESOLVED_BY_PAYPAL"]))).returning({ id: claims.id });
+    if (closed) await audit(closed.id, "DISPUTE_RESOLVED", { disputeId: id, outcome: d.dispute_outcome?.outcome_code ?? null });
+  } else if (linked?.claimId) await respondInPayPal(linked.claimId, { disputeIds: [id], source: "DISPUTE_SYNC" });
   return { id, status: d.status as string, claimId: claim?.id ?? null };
 }
 

@@ -20,7 +20,7 @@ import type { Assessment } from "./fraud";
 const DAY = 86_400_000;
 const RETURN_ACTIONS: readonly Action[] = ["REFUND_ON_RETURN", "STANDARD_RETURN"];
 /** Claim states where nothing more can be chosen or proposed. */
-const FINAL = ["REFUND_SENT", "PAYOUT_SENT", "RESOLVED", "DENIED", "ESCALATED"];
+const FINAL = ["REFUND_SENT", "PAYOUT_SENT", "RESOLVED", "DENIED", "ESCALATED", "ANSWERED_IN_PAYPAL", "RESOLVED_BY_PAYPAL"];
 
 async function context(claimId: string) {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(claimId)) throw new ClaimError(`unknown claim ${claimId}`);
@@ -303,7 +303,7 @@ async function buyerEmail(order: typeof orders.$inferSelect) {
  */
 export async function respondInPayPal(claimId: string, why: { disputeIds: string[]; source: string }) {
   const [won] = await db().update(claims).set({ status: "RESPOND_IN_PAYPAL" })
-    .where(and(eq(claims.id, claimId), notInArray(claims.status, ["RESPOND_IN_PAYPAL", "ESCALATED"]))).returning({ id: claims.id });
+    .where(and(eq(claims.id, claimId), notInArray(claims.status, ["RESPOND_IN_PAYPAL", "ESCALATED", "ANSWERED_IN_PAYPAL", "RESOLVED_BY_PAYPAL"]))).returning({ id: claims.id });
   if (!won) return null;
   await db().update(approvals).set({ status: "SUPERSEDED", decidedBy: "undo:dispute", decidedAt: new Date() }).where(and(eq(approvals.claimId, claimId), eq(approvals.status, "PENDING")));
   let [esc] = await db().select({ id: offers.id }).from(offers).where(and(eq(offers.claimId, claimId), eq(offers.action, "ESCALATE_TO_PAYPAL"))).limit(1);

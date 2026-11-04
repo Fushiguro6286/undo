@@ -1,0 +1,40 @@
+{
+  "kind": "escalated-claim-replay",
+  "note": "Recorded from real PayPal sandbox calls. require-evidence and adjudicate are sandbox-only steps; adjudicate stands in for PayPal's decision.",
+  "disputeId": "PP-R-BQG-10194997",
+  "claimId": null,
+  "linkedToUndoClaim": false,
+  "startedAt": "2026-11-04T18:04:30.596Z",
+  "finishedAt": "2026-11-04T18:05:08.338Z",
+  "final": {
+    "step": "WAITING",
+    "disputeId": "PP-R-BQG-10194997",
+    "status": "WAITING_FOR_SELLER_RESPONSE",
+    "stage": "CHARGEBACK",
+    "links": [
+      "accept-claim",
+      "provide-evidence"
+    ],
+    "detail": {
+      "needs": "a person: PayPal asks for PROOF_OF_FULFILLMENT, PROOF_OF_REFUND, PROOF_OF_DELIVERY_SIGNATURE, and Undo holds no such record"
+    },
+    "at": "2026-11-04T18:05:06.613Z"
+  },
+  "steps": [
+    {
+      "step": "WAITING",
+      "disputeId": "PP-R-BQG-10194997",
+      "status": "WAITING_FOR_SELLER_RESPONSE",
+      "stage": "CHARGEBACK",
+      "links": [
+        "accept-claim",
+        "provide-evidence"
+      ],
+      "detail": {
+        "needs": "a person: PayPal asks for PROOF_OF_FULFILLMENT, PROOF_OF_REFUND, PROOF_OF_DELIVERY_SIGNATURE, and Undo holds no such record"
+      },
+      "at": "2026-11-04T18:05:06.613Z"
+    }
+  ],
+  "auditTimeline": []
+}

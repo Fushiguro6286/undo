@@ -122,7 +122,13 @@ export function buildServer() {
       inputSchema: { claim_id: z.string().max(40) },
       annotations: { readOnlyHint: true },
     },
-    ({ claim_id }) => run(async () => resolutionResponse(await getClaim(claim_id))),
+    ({ claim_id }) =>
+      run(async () => {
+        const c = await getClaim(claim_id);
+        const r = await resolutionResponse(c);
+        // For a merchant without an Undo endpoint: a cited pack the person files in PayPal's Resolution Center.
+        return c.faultParty ? { ...r, evidence_pack_url: `${base()}/api/claims/${c.id}/evidence-pack` } : r;
+      }),
   );
 
   server.registerTool(

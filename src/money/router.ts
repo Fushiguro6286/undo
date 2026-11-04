@@ -103,6 +103,25 @@ export async function payoutAgentFault(r: { claimId: string; receiver: string; a
   }
 }
 
+/**
+ * Merchant at fault on a disputed capture: accept the buyer's claim in PayPal, which refunds them. Called only after
+ * a person's tap. PayPal documents a multipart body with one optional file (accept-claim-document); the accepted
+ * response options come from the dispute's allowed_response_options, so nothing else is sent.
+ */
+export async function acceptDisputeClaim(r: { claimId: string; disputeId: string; amount: string; version: number }) {
+  const requestId = moneyRequestId(r.claimId, "ACCEPT_DISPUTE_CLAIM", r.version);
+  const value = fromCents(toCents(r.amount));
+  await db().insert(moneyActions).values({ claimId: r.claimId, lane: "DISPUTE", kind: "refund", requestId, amount: value, status: "SENDING" }).onConflictDoNothing();
+  try {
+    await merchant().request("POST", `/v1/customer/disputes/${encodeURIComponent(r.disputeId)}/accept-claim`, { requestId, form: new FormData() });
+    await db().update(moneyActions).set({ paypalRef: r.disputeId, status: "ACCEPTED" }).where(eq(moneyActions.requestId, requestId));
+    return { disputeId: r.disputeId, amount: value, requestId };
+  } catch (e) {
+    await db().update(moneyActions).set({ status: "FAILED" }).where(eq(moneyActions.requestId, requestId));
+    throw e;
+  }
+}
+
 /** The payout's item status (SUCCESS, PENDING, UNCLAIMED, FAILED, ...): read-only. */
 export async function payoutItemStatus(batchId: string) {
   const res = await agentPlatform().request("GET", `/v1/payments/payouts/${encodeURIComponent(batchId)}`);

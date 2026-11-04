@@ -66,6 +66,19 @@ const describe = (r: Result) =>
 
 const approve = (a: Approval, amount?: string) =>
   act(a.id, async () => ({ text: describe(await call(`/api/merchant/approvals/${a.id}`, { decision: "approve", ...(amount !== undefined && { amount }) })) }));
+const answer = (a: Approval) =>
+  act(a.id, async () => {
+    const r = await call(`/api/merchant/claims/${a.claimId}/dispute`, {});
+    const text: Record<string, string> = {
+      REQUIRE_EVIDENCE: "PayPal now asks for your evidence (sandbox step). PayPal moves the case in a minute or two: tap again then.",
+      PROVIDE_EVIDENCE: `Evidence pack sent to PayPal: ${r.detail?.statements?.length ?? 0} cited statements.`,
+      ACCEPT_CLAIM: `Claim accepted in PayPal: PayPal refunds the buyer $${r.detail?.amount}.`,
+      ADJUDICATE: `Sandbox adjudication run: ${r.detail?.outcome}.`,
+      WAITING: `PayPal offers no step right now (status ${r.status}). Try again in a minute.`,
+      RESOLVED: "PayPal has resolved this case.",
+    };
+    return { text: text[r.step] ?? r.step };
+  });
 const reject = (a: Approval) => act(a.id, async () => (await call(`/api/merchant/approvals/${a.id}`, { decision: "reject" }), { text: "Rejected. The buyer's other options stay open." }));
 const propose = (a: Approval, p: { action: string; amount: string | null; asParty: string }) =>
   act(a.id, async () => {
@@ -105,7 +118,8 @@ function QueueItem({ a, claim }: { a: Approval; claim?: Claim }) {
       {disputed ? (
         <div className="uc-actions">
           <a className="uc-button" href={RESOLUTION_CENTER} target="_blank" rel="noreferrer">Open PayPal Resolution Center</a>
-          <button className="uc-ghost" disabled={off} onClick={() => approve(a)}>{busy === a.id ? "Working…" : "Mark handled in PayPal"}</button>
+          <button disabled={off} onClick={() => answer(a)}>{busy === a.id ? "Working…" : ["MERCHANT", "CARRIER"].includes(a.faultParty ?? "") ? "Accept claim in PayPal" : "Send evidence pack"}</button>
+          <button className="uc-ghost" disabled={off} onClick={() => approve(a)}>Mark handled</button>
           <button className="uc-ghost" onClick={() => select(a.claimId)}>Evidence</button>
         </div>
       ) : review ? (
@@ -219,6 +233,7 @@ const STAGE: Record<string, string> = {
   CLAIM_OPENED: "claim", EVIDENCE_ADDED: "evidence", FAULT_DECIDED: "fault", OFFERS_CREATED: "offers",
   REFUND_SENT: "paypal", REFUND_CONFIRMED: "paypal", REPLACEMENT_SHIPPING: "paypal", ESCALATED_TO_PAYPAL: "paypal",
   PAYOUT_SENT: "paypal", PAYOUT_CONFIRMED: "paypal", RESPOND_IN_PAYPAL: "paypal",
+  DISPUTE_EVIDENCE_REQUIRED: "paypal", DISPUTE_EVIDENCE_SENT: "paypal", DISPUTE_CLAIM_ACCEPTED: "paypal", DISPUTE_ADJUDICATED: "paypal", DISPUTE_RESOLVED: "paypal",
 };
 
 /** Claim -> evidence -> fault -> offers -> decision -> PayPal confirmation, straight from the audit chain. */
