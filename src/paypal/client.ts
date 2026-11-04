@@ -4,7 +4,8 @@ export const SANDBOX_BASE_URL = "https://api-m.sandbox.paypal.com";
 
 /** Throws unless the configured PayPal host is the sandbox. Called at startup and by every client. */
 export function assertSandbox(baseUrl: string | undefined = process.env.PAYPAL_BASE_URL): string {
-  if (baseUrl?.replace(/\/+$/, "") !== SANDBOX_BASE_URL || (process.env.PAYPAL_ENV ?? "sandbox") !== "sandbox") {
+  // Unset defaults to sandbox (like PAYPAL_ENV), so a host without the var (e.g. a Vercel build) still works.
+  if ((baseUrl ?? SANDBOX_BASE_URL).replace(/\/+$/, "") !== SANDBOX_BASE_URL || (process.env.PAYPAL_ENV ?? "sandbox") !== "sandbox") {
     throw new Error(`Refusing to run: PAYPAL_BASE_URL must be ${SANDBOX_BASE_URL} and PAYPAL_ENV must be sandbox.`);
   }
   return SANDBOX_BASE_URL;

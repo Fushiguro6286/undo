@@ -17,9 +17,10 @@ describe("assertSandbox", () => {
   it("accepts the sandbox host, with or without a trailing slash", () => {
     expect(assertSandbox(SANDBOX_BASE_URL)).toBe(SANDBOX_BASE_URL);
     expect(assertSandbox(SANDBOX_BASE_URL + "/")).toBe(SANDBOX_BASE_URL);
+    expect(assertSandbox(undefined)).toBe(SANDBOX_BASE_URL);
   });
-  it("refuses live, missing and look-alike hosts", () => {
-    for (const url of ["https://api-m.paypal.com", undefined, "", "https://api-m.sandbox.paypal.com.evil.com"]) {
+  it("refuses live, empty and look-alike hosts", () => {
+    for (const url of ["https://api-m.paypal.com", "", "https://api-m.sandbox.paypal.com.evil.com"]) {
       expect(() => assertSandbox(url)).toThrow(/Refusing to run/);
     }
   });
