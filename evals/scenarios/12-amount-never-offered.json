@@ -44,7 +44,13 @@
     "reasons": [
       "DELIVERED_COLOR_MISMATCH"
     ],
-    "note": "The offered keep-it refund is 8.70 (30%). Day 5 also rejects any amount that differs from a rule-made offer, even one inside the policy ceiling."
+    "note": "The offered keep-it refund is 8.70 (30%). Day 5 also rejects any amount that differs from a rule-made offer, even one inside the policy ceiling.",
+    "offers": [
+      "PARTIAL_REFUND_KEEP_ITEM 8.70 ALLOW",
+      "EXCHANGE - ALLOW",
+      "REFUND_ON_RETURN 29.00 QUEUE",
+      "ESCALATE_TO_PAYPAL - ALLOW"
+    ]
   },
   "proposals": [
     {

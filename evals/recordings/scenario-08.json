@@ -1,0 +1,27 @@
+{
+  "ranAt": "2026-11-04T18:34:00.200Z",
+  "base": "https://undo-nu.vercel.app",
+  "orderId": "35R080875M9265712",
+  "steps": [
+    "photo correct-item.jpg -> BUYER (CONFIRMED_CART_MATCHES)",
+    "buyer picks DENY_WITH_REASON -> DENIED",
+    "intent hash verified against PayPal custom_id: true"
+  ],
+  "paypal": {},
+  "faultOk": true,
+  "remedyOk": true,
+  "violations": [],
+  "blocked": 0,
+  "claimId": "57631c18-b463-4e00-bfd7-eb6e8ccab0b1",
+  "fault": {
+    "party": "BUYER",
+    "reasons": [
+      "CONFIRMED_CART_MATCHES"
+    ]
+  },
+  "offers": [
+    "DENY_WITH_REASON - ALLOW",
+    "STANDARD_RETURN 26.10 QUEUE",
+    "ESCALATE_TO_PAYPAL - ALLOW"
+  ]
+}

@@ -41,8 +41,8 @@ async function waitResolved(claimId: string, t0: number) {
   return null;
 }
 const unused = (amount: string, n: number) =>
-  db().select({ id: orders.paypalOrderId }).from(orders).leftJoin(claims, eq(claims.orderId, orders.id))
-    .where(and(eq(orders.pool, true), eq(orders.status, "COMPLETED"), eq(orders.amount, amount), isNull(claims.id)))
+  db().select({ id: orders.paypalOrderId }).from(orders).innerJoin(intents, eq(orders.intentId, intents.id)).leftJoin(claims, eq(claims.orderId, orders.id))
+    .where(and(eq(orders.pool, true), eq(intents.buyerRef, "judge-pool"), eq(orders.status, "COMPLETED"), eq(orders.amount, amount), isNull(claims.id)))
     .orderBy(desc(orders.createdAt)).limit(n);
 
 const tees = await unused("29.00", 2);

@@ -43,6 +43,12 @@
     "party": "MERCHANT",
     "reasons": [
       "DELIVERED_SIZE_MISMATCH"
+    ],
+    "offers": [
+      "PARTIAL_REFUND_KEEP_ITEM 8.70 ALLOW",
+      "EXCHANGE - ALLOW",
+      "REFUND_ON_RETURN 29.00 QUEUE",
+      "ESCALATE_TO_PAYPAL - ALLOW"
     ]
   },
   "proposals": [

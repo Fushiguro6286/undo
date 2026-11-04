@@ -43,6 +43,12 @@
     "party": "MERCHANT",
     "reasons": [
       "DELIVERED_COLOR_MISMATCH"
+    ],
+    "offers": [
+      "PARTIAL_REFUND_KEEP_ITEM 36.00 QUEUE",
+      "EXCHANGE - ALLOW",
+      "REFUND_ON_RETURN 120.00 QUEUE",
+      "ESCALATE_TO_PAYPAL - ALLOW"
     ]
   },
   "proposals": [

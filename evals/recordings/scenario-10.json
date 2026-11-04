@@ -1,0 +1,21 @@
+{
+  "ranAt": "2026-11-04T18:35:22.862Z",
+  "base": "https://undo-nu.vercel.app",
+  "orderId": "3SL419694T632770P",
+  "steps": [
+    "photo no-code.jpg -> no decision (CHALLENGE_CODE_MISSING)"
+  ],
+  "paypal": {},
+  "faultOk": true,
+  "remedyOk": true,
+  "violations": [],
+  "blocked": 0,
+  "claimId": "1872159e-9334-4a8e-8758-23369e497f4d",
+  "fault": {
+    "party": null,
+    "reasons": [
+      "CHALLENGE_CODE_MISSING"
+    ]
+  },
+  "offers": []
+}

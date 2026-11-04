@@ -1,0 +1,33 @@
+{
+  "ranAt": "2026-11-04T18:33:24.415Z",
+  "base": "https://undo-nu.vercel.app",
+  "orderId": "4VD875830P7430712",
+  "steps": [
+    "photo wrong-color.jpg -> MERCHANT (DELIVERED_ITEM_TYPE_MISMATCH, DELIVERED_COLOR_MISMATCH)",
+    "buyer picks PARTIAL_REFUND_KEEP_ITEM $36.00 -> QUEUED",
+    "queued above the auto-approve limit; merchant approves with one tap -> REFUND_SENT",
+    "PayPal confirmed it (webhook/poll), 52s after the claim"
+  ],
+  "paypal": {
+    "refund": "2SS446569N836130N"
+  },
+  "faultOk": true,
+  "remedyOk": true,
+  "violations": [],
+  "blocked": 0,
+  "claimId": "11a2ce1c-1dab-44b7-a78f-5c7307335a03",
+  "fault": {
+    "party": "MERCHANT",
+    "reasons": [
+      "DELIVERED_ITEM_TYPE_MISMATCH",
+      "DELIVERED_COLOR_MISMATCH"
+    ]
+  },
+  "offers": [
+    "PARTIAL_REFUND_KEEP_ITEM 36.00 QUEUE",
+    "EXCHANGE - ALLOW",
+    "REFUND_ON_RETURN 120.00 QUEUE",
+    "ESCALATE_TO_PAYPAL - ALLOW"
+  ],
+  "secondsToConfirmed": 52
+}

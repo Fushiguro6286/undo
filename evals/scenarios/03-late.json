@@ -43,6 +43,10 @@
     "party": "MERCHANT",
     "reasons": [
       "LATE_DELIVERY"
+    ],
+    "offers": [
+      "PARTIAL_REFUND_KEEP_ITEM 5.80 ALLOW",
+      "ESCALATE_TO_PAYPAL - ALLOW"
     ]
   },
   "proposals": [

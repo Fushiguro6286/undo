@@ -1,0 +1,29 @@
+{
+  "ranAt": "2026-11-04T18:30:41.998Z",
+  "base": "https://undo-nu.vercel.app",
+  "orderId": "814462160A201042Y",
+  "steps": [
+    "photo wrong-size.jpg -> MERCHANT (DELIVERED_SIZE_MISMATCH)",
+    "buyer picks EXCHANGE -> RESOLVED"
+  ],
+  "paypal": {
+    "tracking": "FERNR88FCA794"
+  },
+  "faultOk": true,
+  "remedyOk": true,
+  "violations": [],
+  "blocked": 0,
+  "claimId": "88fca794-ad0e-48fe-9744-a4cc95b90e0c",
+  "fault": {
+    "party": "MERCHANT",
+    "reasons": [
+      "DELIVERED_SIZE_MISMATCH"
+    ]
+  },
+  "offers": [
+    "PARTIAL_REFUND_KEEP_ITEM 8.70 ALLOW",
+    "EXCHANGE - ALLOW",
+    "REFUND_ON_RETURN 29.00 QUEUE",
+    "ESCALATE_TO_PAYPAL - ALLOW"
+  ]
+}

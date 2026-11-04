@@ -1,0 +1,28 @@
+{
+  "ranAt": "2026-11-04T18:31:28.688Z",
+  "base": "https://undo-nu.vercel.app",
+  "orderId": "9X257482WU5022401",
+  "steps": [
+    "photo damaged.jpg -> CARRIER (ITEM_DAMAGED_IN_TRANSIT)",
+    "buyer picks REPLACEMENT -> RESOLVED"
+  ],
+  "paypal": {
+    "tracking": "FERNRADAAA9C6"
+  },
+  "faultOk": true,
+  "remedyOk": true,
+  "violations": [],
+  "blocked": 0,
+  "claimId": "adaaa9c6-709c-4003-93c7-5de4df34e0ac",
+  "fault": {
+    "party": "CARRIER",
+    "reasons": [
+      "ITEM_DAMAGED_IN_TRANSIT"
+    ]
+  },
+  "offers": [
+    "REPLACEMENT - ALLOW",
+    "REFUND_ON_RETURN 29.00 QUEUE",
+    "ESCALATE_TO_PAYPAL - ALLOW"
+  ]
+}

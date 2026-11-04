@@ -43,6 +43,11 @@
     "party": "CARRIER",
     "reasons": [
       "ITEM_DAMAGED_IN_TRANSIT"
+    ],
+    "offers": [
+      "REPLACEMENT - ALLOW",
+      "REFUND_ON_RETURN 29.00 QUEUE",
+      "ESCALATE_TO_PAYPAL - ALLOW"
     ]
   },
   "proposals": [

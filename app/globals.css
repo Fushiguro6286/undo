@@ -99,3 +99,18 @@ textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); bor
 .uc-step-blocked::before { background: var(--error); }
 .uc-step-blocked span { color: var(--error); }
 .uc-step time { font-variant-numeric: tabular-nums; font-size: 12px; }
+.eval-tile { padding: 14px; }
+.eval-tile p { margin: 0; }
+.eval-value { font-size: 28px; font-weight: 700; margin: 4px 0 !important; }
+.eval-table { display: grid; }
+.eval-row { border-top: 1px solid var(--line); }
+.eval-row summary, .eval-head { display: grid; grid-template-columns: 28px 1fr 110px 150px 150px; gap: 10px; padding: 10px 0; align-items: baseline; cursor: pointer; }
+.eval-head { cursor: default; color: var(--muted); font-size: 13px; border-top: 0; }
+.eval-detail { padding: 0 0 12px 38px; }
+.eval-detail code { word-break: break-all; }
+@media (max-width: 640px) {
+  .eval-row summary, .eval-head { grid-template-columns: 24px 1fr; }
+  .eval-row summary span:nth-child(n+3), .eval-head span:nth-child(n+3) { grid-column: 2; }
+  .eval-head span:nth-child(n+3) { display: none; }
+  .eval-detail { padding-left: 0; }
+}

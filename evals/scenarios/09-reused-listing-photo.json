@@ -49,6 +49,10 @@
     "party": "UNCLEAR",
     "reasons": [
       "PHOTO_MATCHES_LISTING"
+    ],
+    "offers": [
+      "HUMAN_REVIEW - ALLOW",
+      "ESCALATE_TO_PAYPAL - ALLOW"
     ]
   },
   "proposals": [

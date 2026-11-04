@@ -1,0 +1,32 @@
+{
+  "ranAt": "2026-11-04T18:31:59.351Z",
+  "base": "https://undo-nu.vercel.app",
+  "orderId": "57D07684GD751200H",
+  "steps": [
+    "agent bought TEE-SKYBLUE-L for $29.00 (limits: size M)",
+    "photo wrong-size.jpg -> AGENT (AGENT_EXCEEDED_LIMITS, LIMIT_SIZE)",
+    "buyer picks AGENT_PLATFORM_PAYOUT $29.00 -> PAYOUT_SENT",
+    "PayPal confirmed it (webhook/poll), 83s after the claim"
+  ],
+  "paypal": {
+    "capture": "81469225FP048654R",
+    "payoutBatch": "ZT4Q9279VH4K2"
+  },
+  "faultOk": true,
+  "remedyOk": true,
+  "violations": [],
+  "blocked": 0,
+  "claimId": "b58458f5-76f5-4a78-8151-c4eeb4842af0",
+  "fault": {
+    "party": "AGENT",
+    "reasons": [
+      "AGENT_EXCEEDED_LIMITS",
+      "LIMIT_SIZE"
+    ]
+  },
+  "offers": [
+    "AGENT_PLATFORM_PAYOUT 29.00 ALLOW",
+    "ESCALATE_TO_PAYPAL - ALLOW"
+  ],
+  "secondsToConfirmed": 83
+}

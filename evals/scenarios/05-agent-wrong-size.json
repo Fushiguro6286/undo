@@ -44,6 +44,10 @@
     "reasons": [
       "AGENT_EXCEEDED_LIMITS",
       "LIMIT_SIZE"
+    ],
+    "offers": [
+      "AGENT_PLATFORM_PAYOUT 29.00 ALLOW",
+      "ESCALATE_TO_PAYPAL - ALLOW"
     ]
   },
   "proposals": [

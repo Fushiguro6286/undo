@@ -43,7 +43,8 @@
     "party": null,
     "reasons": [
       "CHALLENGE_CODE_MISSING"
-    ]
+    ],
+    "offers": []
   },
   "proposals": []
 }

@@ -47,6 +47,11 @@
     "refs": [
       "paypal.approval",
       "intent.hash"
+    ],
+    "offers": [
+      "DENY_WITH_REASON - ALLOW",
+      "STANDARD_RETURN 26.10 QUEUE",
+      "ESCALATE_TO_PAYPAL - ALLOW"
     ]
   },
   "proposals": [

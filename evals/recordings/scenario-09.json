@@ -1,0 +1,24 @@
+{
+  "ranAt": "2026-11-04T18:34:20.628Z",
+  "base": "https://undo-nu.vercel.app",
+  "orderId": "51V7671073808381W",
+  "steps": [
+    "photo reused-listing.jpg -> UNCLEAR (PHOTO_MATCHES_LISTING)"
+  ],
+  "paypal": {},
+  "faultOk": true,
+  "remedyOk": true,
+  "violations": [],
+  "blocked": 0,
+  "claimId": "6b711a6a-b18d-4019-a691-40f9dbdaf29b",
+  "fault": {
+    "party": "UNCLEAR",
+    "reasons": [
+      "PHOTO_MATCHES_LISTING"
+    ]
+  },
+  "offers": [
+    "HUMAN_REVIEW - ALLOW",
+    "ESCALATE_TO_PAYPAL - ALLOW"
+  ]
+}

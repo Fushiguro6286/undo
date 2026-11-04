@@ -43,6 +43,11 @@
     "party": "BUYER",
     "reasons": [
       "CONFIRMED_CART_MATCHES"
+    ],
+    "offers": [
+      "DENY_WITH_REASON - ALLOW",
+      "STANDARD_RETURN 26.10 QUEUE",
+      "ESCALATE_TO_PAYPAL - ALLOW"
     ]
   },
   "proposals": [
