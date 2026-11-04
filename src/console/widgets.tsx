@@ -44,7 +44,7 @@ export async function login(password: string) {
   set({ data: await call("/api/merchant/console") });
 }
 export const refresh = () => call("/api/merchant/console").then((data) => set({ data }));
-const select = (claimId: string) => set({ selected: claimId });
+export const select = (claimId: string) => set({ selected: claimId });
 /** The claim the evidence viewer and timeline are showing. */
 export const currentClaim = (s: State = state) => s.data?.claims.find((x) => x.id === s.selected) ?? s.data?.claims.find((x) => x.photoPath) ?? s.data?.claims[0];
 

@@ -1,3 +1,4 @@
+import { rateLimit } from "@/src/limits";
 import { z } from "zod";
 import { handle } from "@/src/http";
 import { Limits } from "@/src/intent/limits";
@@ -11,6 +12,7 @@ const Input = z.object({
 
 export async function POST(req: Request) {
   return handle(async () => {
+    await rateLimit(req, "checkout", 20);
     const { buyerRef, limits, cart } = Input.parse(await req.json());
     return createCheckout("CONFIRMED", buyerRef, limits, cart);
   });

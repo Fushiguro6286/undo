@@ -29,6 +29,13 @@
       "when": 1793801836232,
       "tag": "0003_agent_pick",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793818292580,
+      "tag": "0004_judge_mode",
+      "breakpoints": true
     }
   ]
 }

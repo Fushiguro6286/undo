@@ -114,3 +114,15 @@ textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); bor
   .eval-head span:nth-child(n+3) { display: none; }
   .eval-detail { padding-left: 0; }
 }
+
+/* Judge mode */
+.judge-banner { background: var(--accent-soft); color: var(--ink); border-bottom: 1px solid var(--line); padding: 8px 16px; font-size: 13px; text-align: center; }
+.judge-banner a { color: var(--accent); font-weight: 600; }
+.judge-steps { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 4px; overflow-wrap: anywhere; }
+.judge-samples { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.judge-samples a { display: grid; gap: 4px; color: inherit; text-decoration: none; }
+.judge-samples img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+
+/* Fallback AG Grid console */
+.grid-console { padding-top: 0; max-width: 1200px; }
+.grid-console-table { height: 420px; margin-top: 8px; }

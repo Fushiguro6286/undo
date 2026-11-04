@@ -1,9 +1,10 @@
 // Claim intake: open a claim (challenge code + upload link), add a photo (normalize, hash, vision, fraud checks),
 // the buyer contesting the delivery date, and the merchant reporting tracking + delivery.
+import { createHash } from "node:crypto";
 import { and, desc, eq, isNotNull, ne } from "drizzle-orm";
 import sharp from "sharp";
 import { db } from "../db";
-import { claims, evidence, intents, orders, shipments } from "../db/schema";
+import { claims, evidence, intents, orders, shipments, visionCache } from "../db/schema";
 import { decideFault, type Item } from "../fault/engine";
 import type { Limits } from "../intent/limits";
 import { getOrder } from "../intent/orders";
@@ -85,10 +86,14 @@ export async function addEvidence(claimId: string, upload: Buffer) {
     throw new ClaimError("that file is not a readable image");
   }
   const hash = await phash(jpeg);
-  let vision: VisionResult | null = null;
+  // The exact same photo bytes get the stored findings: no second model call, and the same answer every time.
+  const sha256 = createHash("sha256").update(jpeg).digest("hex");
+  const [cached] = await db().select().from(visionCache).where(eq(visionCache.sha256, sha256));
+  let vision: VisionResult | null = cached ? (cached.result as VisionResult) : null;
   for (let attempt = 1; attempt <= 2 && !vision; attempt++) {
     try {
       vision = await analyzePhoto(jpeg);
+      await db().insert(visionCache).values({ sha256, result: vision }).onConflictDoNothing();
     } catch (e) {
       console.error(`[vision] attempt ${attempt}:`, (e as Error).message); // after 2 failures: VISION_FAILED, a person reviews it
     }

@@ -1,3 +1,4 @@
+import { rateLimit } from "@/src/limits";
 import { z } from "zod";
 import { handle } from "@/src/http";
 import { getClaim } from "@/src/claims/claims";
@@ -11,6 +12,7 @@ const Input = z.object({
 /** The buyer or their agent picks one rule-made offer. */
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   return handle(async () => {
+    await rateLimit(req, "choose", 30);
     const id = (await ctx.params).id;
     const { offer_id, amount } = Input.parse(await req.json());
     const result = await chooseOffer(id, offer_id, amount);

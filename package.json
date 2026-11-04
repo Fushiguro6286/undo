@@ -16,7 +16,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "spike": "tsx --env-file=.env",
-    "eval": "tsx --env-file=.env --env-file=.env.neon scripts/eval.ts"
+    "eval": "tsx --env-file=.env --env-file-if-exists=.env.neon scripts/eval.ts",
+    "seed": "tsx --env-file=.env --env-file-if-exists=.env.neon scripts/seed.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.93",
@@ -24,6 +25,8 @@
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@neon/config": "^1.10.1",
     "@neon/env": "^1.6.9",
+    "ag-grid-community": "36.3.0",
+    "ag-grid-react": "36.3.0",
     "ag-studio": "3.1.0",
     "ag-studio-react": "3.1.0",
     "ai": "^7.0.158",

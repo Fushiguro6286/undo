@@ -5,6 +5,7 @@ import { PayPalError } from "./paypal/client";
 import { CheckoutError } from "./intent/orders";
 import { ClaimError } from "./claims/claims";
 import { PolicyError } from "./policy/store";
+import { RateLimitError } from "./limits";
 
 class AuthError extends Error {}
 
@@ -29,6 +30,7 @@ export async function handle(fn: () => Promise<unknown>) {
     if (e instanceof ZodError) return Response.json({ error: "invalid input", issues: e.issues.map((i) => `${i.path.join(".")}: ${i.message}`) }, { status: 400 });
     if (e instanceof CheckoutError || e instanceof ClaimError || e instanceof PolicyError) return Response.json({ error: e.message }, { status: 400 });
     if (e instanceof AuthError) return Response.json({ error: e.message }, { status: 401 });
+    if (e instanceof RateLimitError) return Response.json({ error: e.message }, { status: 429, headers: { "retry-after": String(Math.ceil(e.retryAfterSec)) } });
     if (e instanceof PayPalError) return Response.json({ error: e.message, paypal: { status: e.status, code: e.code, issues: e.issues } }, { status: 502 });
     console.error("[api]", (e as Error).message);
     return Response.json({ error: "internal error" }, { status: 500 });

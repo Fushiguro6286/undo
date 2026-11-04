@@ -137,3 +137,26 @@ export const auditEvents = pgTable("audit_events", {
   hash: text("hash").notNull(),
   createdAt: createdAt(),
 });
+
+// Judge mode (spec section 18): fixed-window counters for per-IP rate limits (key holds a hash, never the raw IP).
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  count: integer("count").notNull(),
+});
+
+// Daily LLM spend, checked before every model call against LLM_DAILY_SPEND_CAP_USD.
+export const llmUsage = pgTable("llm_usage", {
+  day: text("day").primaryKey(), // YYYY-MM-DD (UTC)
+  calls: integer("calls").notNull().default(0),
+  inputTokens: integer("input_tokens").notNull().default(0),
+  outputTokens: integer("output_tokens").notNull().default(0),
+  costUsd: numeric("cost_usd", { precision: 12, scale: 6 }).notNull().default("0"),
+});
+
+// Vision findings for an exact photo (sha256 of the normalized JPEG): the same bytes never cost a second model call.
+export const visionCache = pgTable("vision_cache", {
+  sha256: text("sha256").primaryKey(),
+  result: jsonb("result").notNull(),
+  createdAt: createdAt(),
+});

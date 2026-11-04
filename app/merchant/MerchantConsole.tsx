@@ -5,8 +5,10 @@ import { login, refresh, useConsole } from "@/src/console/widgets";
 
 // AG Studio runs in the browser only.
 const Studio = dynamic(() => import("@/src/console/Studio"), { ssr: false, loading: () => <p className="muted uc-pad">Loading the console…</p> });
+// Fallback build (spec section 15): plain AG Grid tables, no AG Studio.
+const GridConsole = dynamic(() => import("@/src/console/GridConsole"), { ssr: false, loading: () => <p className="muted uc-pad">Loading the console…</p> });
 
-export function MerchantConsole({ licenseKey }: { licenseKey?: string }) {
+export function MerchantConsole({ licenseKey, fallback = false }: { licenseKey?: string; fallback?: boolean }) {
   const { data } = useConsole();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string>();
@@ -58,9 +60,12 @@ export function MerchantConsole({ licenseKey }: { licenseKey?: string }) {
           <p className="eyebrow">Fernleaf Goods · Merchant console</p>
           <h1>Claims on agent purchases</h1>
         </div>
-        <a href="/merchant/policy">Return policy →</a>
+        <nav className="row">
+          <a href="/merchant/policy">Return policy →</a>
+          {fallback ? <a href="/merchant">AG Studio console →</a> : <a href="/merchant/grid">Plain AG Grid view →</a>}
+        </nav>
       </header>
-      <Studio licenseKey={licenseKey} />
+      {fallback ? <GridConsole /> : <Studio licenseKey={licenseKey} />}
     </main>
   );
 }
