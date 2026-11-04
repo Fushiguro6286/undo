@@ -11,4 +11,10 @@ async function handle(req: Request) {
   return transport.handleRequest(req);
 }
 
-export { handle as GET, handle as POST, handle as DELETE };
+// Stateless: there is no server-to-client stream to open, so GET gets 405 (allowed by the MCP spec) instead of an
+// SSE stream that hangs until the function times out.
+export function GET() {
+  return new Response("Method Not Allowed", { status: 405, headers: { Allow: "POST, DELETE" } });
+}
+
+export { handle as POST, handle as DELETE };

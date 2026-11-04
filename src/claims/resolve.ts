@@ -211,6 +211,23 @@ export async function decideApproval(approvalId: string, decision: "approve" | "
   return execute(c, offer, 1);
 }
 
+/**
+ * "Edit" in the approval queue: the merchant changes the amount. That is a new proposal, checked by the evaluator
+ * again; if it passes, the old item is rejected and the edited one approved (which re-checks and pays).
+ */
+export async function approveEdited(approvalId: string, amount: string, decidedBy: string) {
+  if (!/^[0-9a-f-]{36}$/i.test(approvalId)) throw new ClaimError(`unknown approval ${approvalId}`);
+  const [row] = await db().select({ a: approvals, offer: offers, claim: claims }).from(approvals)
+    .innerJoin(offers, eq(approvals.offerId, offers.id)).innerJoin(claims, eq(approvals.claimId, claims.id))
+    .where(eq(approvals.id, approvalId));
+  if (!row || row.a.status !== "PENDING") throw new ClaimError(`approval ${approvalId} is ${row?.a.status ?? "unknown"}`);
+  const party = (row.offer.explanation as { party?: FaultParty } | null)?.party ?? (row.claim.faultParty as FaultParty);
+  const p = await proposeRemedy(row.claim.id, { action: row.offer.action as Action, amount, asParty: row.claim.faultParty === "UNCLEAR" ? party : undefined }, "system");
+  if (p.verdict === "BLOCK") throw new ClaimError(`blocked by the store's policy: ${p.reasons.join(", ")}`);
+  await decideApproval(approvalId, "reject", decidedBy);
+  return decideApproval(p.approvalId!, "approve", decidedBy);
+}
+
 /** PAYMENT.CAPTURE.REFUNDED (verified webhook): confirms the refund and resolves the claim. Idempotent. */
 export async function confirmRefund(refundId: string) {
   const [m] = await db().update(moneyActions).set({ status: "CONFIRMED" }).where(and(eq(moneyActions.paypalRef, refundId), ne(moneyActions.status, "CONFIRMED"))).returning();

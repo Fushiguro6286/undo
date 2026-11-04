@@ -11,7 +11,7 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - [x] **Day 5, Nov 2:** (done Nov 4) offers, Lane A refunds with request ids, audit log
   - [x] **CHECKPOINT A:** scenarios 1, 6 and 11 pass end to end (hosted, Nov 4)
 - [ ] **Day 6, Nov 3:** (code done + hosted check Nov 4; waits on the Claude Desktop run) MCP server; Claude Desktop end to end
-- [ ] **Day 7, Nov 4:** AG Studio console, theme, approval queue, evidence viewer with the audit badge
+- [x] **Day 7, Nov 4:** (done locally; hosted check pending) AG Studio console, theme, approval queue, evidence viewer with the audit badge
 - [ ] **Day 8, Nov 5:** claim timeline widget, minimal Studio agent, blocked proposal → queue → one-tap approval
   - [ ] **CHECKPOINT B:** demo beats 1, 2, 4 and 5 run on the hosted URL
 - [ ] **Day 9, Nov 6:** agent-fault payout, Escalate to PayPal link, `TRANSACTION_DISPUTED` guard, "respond in PayPal" queue state
@@ -88,3 +88,10 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Neon pool:** about 1 unused $29 tee left + 2 jackets; top up before the next hosted run.
 - **Waiting on human:** connect Claude Desktop (README) and run propose -> approve on PayPal -> claim -> upload -> choose.
 - **Next:** Day 7: AG Studio console (license is a trial; confirm terms with AG Grid).
+
+### Nov 4 (Day 6 check + Day 7: AG Studio console)
+- **Claude Desktop:** the hosted logs show Anthropic's connector (`Claude-User`) initializing and listing the tools at 14:55 UTC; no tool calls yet, so the Day 6 end-to-end run from Claude Desktop is still to do. Fix: `GET /mcp` now returns 405 (allowed by the MCP spec for a server with no SSE stream) instead of an SSE stream that hung until the 120 s timeout.
+- **Done:** `/merchant` = AG Studio 3.1.0 (`ag-studio`, `ag-studio-react`, pinned) behind the merchant password, loaded client-only. Undo theme (`studioTheme.withParams` on the app's CSS tokens, so light/dark follow the app); one saved layout (default in code, "Save layout" keeps the merchant's own in this browser, "Reset layout"); a claims data source shown in a built-in grid (newest first); two custom widgets: **approval queue** (approve, edit amount, reject; HUMAN_REVIEW items get a propose form that runs the evaluator) and **evidence viewer** (listing art next to the buyer's photo, vision findings, fraud signals, fault reasons, audit-chain badge). One read: `GET /api/merchant/console`. Edit = `approveEdited`: a new proposal checked by the evaluator, then the old item is rejected and the new one approved (which re-checks and pays).
+- **Done-when (local, real sandbox):** $120 jacket claim -> keep-it $36 queued; edit to $100 blocked in the console (`KEEP_ITEM_OVER_MAX_PCT`, original stays queued); edit to $30 -> refund 0S526827R2628481F sent, confirmed by the PAYMENT.CAPTURE.REFUNDED webhook -> claim RESOLVED; evidence viewer showed the right photos and reasons; audit chain verified (45 events).
+- **Not done:** no AG Studio AI or Studio agent (Day 8, first on the cut list). The license is a 45-day trial (expires Dec 19); terms for the demo still to be confirmed with AG Grid.
+- **Neon pool:** 1 unused $120 jacket left; top up before Day 8's trust-moment run.

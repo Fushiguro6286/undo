@@ -8,7 +8,7 @@ import { intentHash } from "../intent/record";
 import { merchant } from "../paypal/client";
 import type { getClaim } from "./claims";
 
-const ISSUE_TEXT: Record<string, string> = {
+export const ISSUE_TEXT: Record<string, string> = {
   CHALLENGE_CODE_MISSING: "The photo does not show the claim's challenge code.",
   DELIVERED_COLOR_MISMATCH: "The delivered item's color differs from the order.",
   DELIVERED_SIZE_MISMATCH: "The size tag differs from the size ordered.",
