@@ -7,7 +7,7 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - [ ] **Day 1, Oct 29:** scaffold and deploy; spike scripts; sandbox accounts (human); AG Grid license request (human)
 - [ ] **Day 2, Oct 30:** store and buyer page; CONFIRMED and DELEGATED checkout (JS SDK v6); Intent Record and `custom_id` hash; webhook verification; AG Studio hello-world (once license arrives)
 - [x] **Day 3, Oct 31:** (done Nov 4; hosted check waits on Render) claim intake, challenge code, vision, photo match, value thresholds
-- [ ] **Day 4, Nov 1:** fault engine; policy compiler and evaluator
+- [ ] **Day 4, Nov 1:** (code done Nov 4; waits on your policy approval) fault engine; policy compiler and evaluator
 - [ ] **Day 5, Nov 2:** offers, Lane A refunds with request ids, audit log
   - [ ] **CHECKPOINT A:** scenarios 1, 6 and 11 pass end to end
 - [ ] **Day 6, Nov 3:** MCP server; Claude Desktop end to end
@@ -54,3 +54,15 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Schedule:** the calendar is at Day 7. Checkpoint A (Nov 2) slipped more than half a day, so per section 21 **cut #1: the minimal Studio agent**.
 - **Blocked on human:** Render deploy + webhook ID (S9, all hosted checks), AG Grid license (Day 7 fallback rule), optional real sample photos.
 - **Next:** Day 4: fault engine, policy compiler + evaluator, 13 scenario fixtures.
+
+### Nov 4 (Vercel, AG Studio license)
+- **Vercel:** a build with no env vars failed in `next.config.ts` (sandbox assertion on an unset `PAYPAL_BASE_URL`). Unset now defaults to the sandbox host; live, empty and look-alike hosts are still refused. A clean-clone build with no `.env` passes. Hosting: Vercel + Neon replaces Render (spec still says Render).
+- **AG Studio license:** 45-day AG Studio Pro **trial** key, expires 19 Dec 2026, in local `.env` as `AG_STUDIO_LICENSE_KEY` (must also go into Vercel). The key text says "evaluation only, production not permitted": the human confirms with AG Grid that a hackathon demo through Dec 15 is allowed.
+
+### Nov 4 (Day 4: fault engine and policy)
+- **Done:** `src/fault/engine.ts` `decideFault` (section 9 order; machine reasons with evidence refs; missing code = no decision; claim text is never an input). `src/policy/evaluator.ts` `evaluate` → ALLOW/QUEUE/BLOCK (action allowed for party, over-capture incl. earlier refunds, currency, keep-it ceiling, return required, disputed capture, DELEGATED ceiling, payout ≤ compensation, QUEUE above `autoApproveLimit`), plus `allowedActions` and `agentCompensation` for Day 5 offers. `src/policy/compiler.ts` (LLM → zod policy, `diffPolicy`, `SAMPLE_POLICY_TEXT`), `src/policy/store.ts` (versioned drafts, approve, active policy). `/merchant/policy` page + `GET/POST /api/merchant/policy`, `POST /api/merchant/policy/:id/approve`. Claims now use the active policy and store `fault_party` + `reasons` after each photo (status `DECIDED`).
+- **Fixtures:** 13 scenarios in `evals/scenarios/*.json`, run by `evals/scenarios.test.ts` through fraud checks → fault engine → evaluator (no PayPal, no LLM). All give the expected fault and verdicts.
+- **Decision:** `autoApproveLimit` queues refunds only (the merchant's money). Agent payouts come from the agent platform's account and are capped by the policy's compensation, so scenario 5 auto-approves. Scenario 12 is blocked here by the keep-it ceiling; Day 5 also rejects any amount that is not a rule-made offer.
+- **Measured:** sample policy text compiles to exactly `DEFAULT_POLICY` 3/3 (1.4–6.4 s, gemini-3.5-flash-lite); edited text gives exactly the 5 expected rule changes. `scripts/check-samples.ts` now checks the fault ruling too: **6/6 PASS** (BUYER, MERCHANT ×2, CARRIER, no decision, UNCLEAR). 74 tests pass, build passes.
+- **Waiting on human:** approve draft v2 at `/merchant/policy` (done-when check).
+- **Next:** Day 5: offers + explanations, Resolution Extension endpoint, choose → evaluator → money router, Lane A refunds, audit log (Checkpoint A).

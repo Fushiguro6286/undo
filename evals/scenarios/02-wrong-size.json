@@ -1,0 +1,59 @@
+{
+  "id": 2,
+  "name": "Size tag reads L, order says M",
+  "mode": "CONFIRMED",
+  "ordered": {
+    "type": "tee",
+    "color": "Sky Blue",
+    "size": "M",
+    "price": "29.00"
+  },
+  "limits": {
+    "item": "tee",
+    "size": "M",
+    "color": "sky blue",
+    "max_price": "35.00",
+    "deadline": "2026-11-06"
+  },
+  "ceiling": null,
+  "capturedAt": "2026-11-02T10:00:00Z",
+  "promisedBy": "2026-11-05T10:00:00Z",
+  "deliveredAt": "2026-11-04T15:00:00Z",
+  "refunded": "0.00",
+  "disputed": false,
+  "claim": {
+    "type": "wrong_item",
+    "description": "The tag says L, I ordered M."
+  },
+  "evidence": {
+    "codeFound": true,
+    "photoMatches": [],
+    "deliveryContested": false,
+    "vision": {
+      "challenge_code_found": "UNDO-DEMO",
+      "size_tag_text": "L",
+      "dominant_color": "Sky Blue",
+      "item_type": "tee",
+      "damage_detected": false,
+      "confidence": 0.9,
+      "notes": "A tee with a handwritten code card."
+    }
+  },
+  "expected": {
+    "party": "MERCHANT",
+    "reasons": [
+      "DELIVERED_SIZE_MISMATCH"
+    ]
+  },
+  "proposals": [
+    {
+      "action": "EXCHANGE",
+      "amount": null,
+      "currency": "USD",
+      "expected": {
+        "verdict": "ALLOW",
+        "reasons": []
+      }
+    }
+  ]
+}

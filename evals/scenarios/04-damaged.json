@@ -1,0 +1,70 @@
+{
+  "id": 4,
+  "name": "Arrived damaged, item matches",
+  "mode": "CONFIRMED",
+  "ordered": {
+    "type": "tee",
+    "color": "Sky Blue",
+    "size": "M",
+    "price": "29.00"
+  },
+  "limits": {
+    "item": "tee",
+    "size": "M",
+    "color": "sky blue",
+    "max_price": "35.00",
+    "deadline": "2026-11-06"
+  },
+  "ceiling": null,
+  "capturedAt": "2026-11-02T10:00:00Z",
+  "promisedBy": "2026-11-05T10:00:00Z",
+  "deliveredAt": "2026-11-04T15:00:00Z",
+  "refunded": "0.00",
+  "disputed": false,
+  "claim": {
+    "type": "damaged",
+    "description": "There is a tear in the sleeve."
+  },
+  "evidence": {
+    "codeFound": true,
+    "photoMatches": [],
+    "deliveryContested": false,
+    "vision": {
+      "challenge_code_found": "UNDO-DEMO",
+      "size_tag_text": "M",
+      "dominant_color": "Sky Blue",
+      "item_type": "tee",
+      "damage_detected": true,
+      "confidence": 0.9,
+      "notes": "A sky blue tee with a torn sleeve."
+    }
+  },
+  "expected": {
+    "party": "CARRIER",
+    "reasons": [
+      "ITEM_DAMAGED_IN_TRANSIT"
+    ]
+  },
+  "proposals": [
+    {
+      "action": "REPLACEMENT",
+      "amount": null,
+      "currency": "USD",
+      "expected": {
+        "verdict": "ALLOW",
+        "reasons": []
+      }
+    },
+    {
+      "action": "REFUND_ON_RETURN",
+      "amount": "29.00",
+      "currency": "USD",
+      "expected": {
+        "verdict": "QUEUE",
+        "reasons": [
+          "ABOVE_AUTO_APPROVE_LIMIT"
+        ]
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-// Day 3 check: each sample photo, through the real pipeline (normalize, hash, vision, fraud checks), on a claim
+// Each sample photo through the real pipeline (normalize, hash, vision, fraud checks, fault engine), on a claim
 // against a Sky Blue tee size M pool order. Needs JUDGE_MODE=true (pool orders accept the demo code).
 // Usage: npm run spike scripts/check-samples.ts [paypalOrderId]   (default: newest Sky Blue M tee pool order)
 import { readFileSync } from "node:fs";
@@ -22,6 +22,11 @@ const CASES: Record<string, Expect> = {
   "reused-listing.jpg": (_v, a) => (a.signals.includes("PHOTO_MATCHES_LISTING") ? null : "expected PHOTO_MATCHES_LISTING"),
 };
 
+// The fault engine's ruling on a CONFIRMED Sky Blue M tee with no late delivery recorded.
+const PARTY: Record<string, string | null> = {
+  "correct-item.jpg": "BUYER", "wrong-color.jpg": "MERCHANT", "wrong-size.jpg": "MERCHANT", "damaged.jpg": "CARRIER", "no-code.jpg": null, "reused-listing.jpg": "UNCLEAR",
+};
+
 if (process.env.JUDGE_MODE !== "true") throw new Error("set JUDGE_MODE=true");
 let orderId = process.argv[2];
 if (!orderId) {
@@ -39,10 +44,10 @@ for (const [file, expect] of Object.entries(CASES)) {
   const { claimId } = await openClaim(orderId, "wrong_item", "sample check");
   const c = await addEvidence(claimId, readFileSync(`public/samples/${file}`));
   const v = c.evidence[0].visionResult as VisionResult | null;
-  const problem = expect(v, c.assessment!);
+  const problem = expect(v, c.assessment!) ?? (c.faultParty === PARTY[file] ? null : `expected fault ${PARTY[file]}, got ${c.faultParty}`);
   if (problem) failed++;
   console.log(`${problem ? "FAIL" : "PASS"} ${file.padEnd(19)} ${Date.now() - t}ms  ${problem ?? ""}`);
-  console.log(`     code=${v?.challenge_code_found} color=${v?.dominant_color} tag=${v?.size_tag_text} type=${v?.item_type} damage=${v?.damage_detected} conf=${v?.confidence} | ${c.status} ${c.assessment!.signals.join(",")}`);
+  console.log(`     code=${v?.challenge_code_found} color=${v?.dominant_color} tag=${v?.size_tag_text} type=${v?.item_type} damage=${v?.damage_detected} conf=${v?.confidence} | ${c.status} ${c.faultParty} ${(c.reasons as { code: string }[] | null)?.map((r) => r.code).join(",")} ${c.assessment!.signals.join(",")}`);
 }
 console.log(failed ? `${failed} FAILED` : "ALL PASS");
 process.exit(failed ? 1 : 0);

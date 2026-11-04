@@ -3,12 +3,14 @@
 import { and, desc, eq, isNotNull, ne } from "drizzle-orm";
 import sharp from "sharp";
 import { db } from "../db";
-import { claims, evidence, orders, shipments } from "../db/schema";
+import { claims, evidence, intents, orders, shipments } from "../db/schema";
+import { decideFault, type Item } from "../fault/engine";
+import type { Limits } from "../intent/limits";
 import { getOrder } from "../intent/orders";
 import { merchant } from "../paypal/client";
-import { DEFAULT_POLICY } from "../policy/schema";
+import { activePolicy } from "../policy/store";
 import { productSvg } from "../store/art";
-import { PRODUCTS } from "../store/catalog";
+import { PROMISE_DAYS, PRODUCTS, variantBySku } from "../store/catalog";
 import { codeMatches, newChallengeCode } from "./code";
 import { assess, type Assessment } from "./fraud";
 import { findMatches, phash, type HashedPhoto } from "./phash";
@@ -20,9 +22,6 @@ export const CLAIM_TYPES = ["wrong_item", "damaged", "late", "not_as_expected", 
 export type ClaimType = (typeof CLAIM_TYPES)[number];
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
-
-// shortcut: policy is the built-in default until Day 4 adds compiled, merchant-approved policies.
-const activePolicy = async () => DEFAULT_POLICY;
 
 export async function openClaim(paypalOrderId: string, type: ClaimType, description: string) {
   const o = await getOrder(paypalOrderId);
@@ -105,7 +104,25 @@ async function refreshAssessment(claim: typeof claims.$inferSelect, order: typeo
     requireReturnAbove: policy.requireReturnAbove,
   });
   await db().update(evidence).set({ fraudSignals: a }).where(eq(evidence.id, ev.id));
-  await db().update(claims).set({ status: a.decision === "NEEDS_NEW_PHOTO" ? "NEEDS_NEW_PHOTO" : "EVIDENCE_READY" }).where(eq(claims.id, claim.id));
+
+  const [intent] = await db().select().from(intents).where(eq(intents.id, order.intentId!));
+  const [shipment] = await db().select().from(shipments).where(eq(shipments.orderId, order.id));
+  const ordered: Item | undefined = intent.mode === "CONFIRMED" ? variantBySku((intent.cart as { sku: string }[])[0].sku) : (order.chosenItem as Item);
+  if (!ordered || !order.promisedBy) throw new ClaimError(`order ${order.paypalOrderId} has no recorded item or promised date`);
+  const fault = decideFault({
+    assessment: a,
+    vision,
+    mode: intent.mode,
+    ordered,
+    limits: intent.limits as Limits,
+    capturedAt: new Date(order.promisedBy.getTime() - PROMISE_DAYS * 86_400_000).toISOString(), // promised_by = capture + PROMISE_DAYS
+    promisedBy: order.promisedBy.toISOString(),
+    deliveredAt: shipment?.deliveredAt?.toISOString() ?? null,
+  });
+  await db()
+    .update(claims)
+    .set({ status: fault.party ? "DECIDED" : "NEEDS_NEW_PHOTO", faultParty: fault.party, reasons: fault.reasons })
+    .where(eq(claims.id, claim.id));
 }
 
 /** The buyer disputes the merchant-reported delivery date: fraud check 5, so a person decides. */

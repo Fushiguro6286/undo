@@ -44,3 +44,6 @@ h2 { margin: 0 0 8px; font-size: 20px; }
 .evidence figure { margin: 0; }
 .evidence img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
 textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); width: 100%; }
+.policy-text { width: 100%; font: inherit; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); resize: vertical; }
+.spaced { margin-top: 20px; }
+.history { margin: 0; padding-left: 18px; display: grid; gap: 4px; }

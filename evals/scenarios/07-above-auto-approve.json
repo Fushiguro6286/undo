@@ -1,0 +1,72 @@
+{
+  "id": 7,
+  "name": "Valid claim above the auto-approve limit",
+  "mode": "CONFIRMED",
+  "ordered": {
+    "type": "jacket",
+    "color": "Olive",
+    "size": "M",
+    "price": "120.00"
+  },
+  "limits": {
+    "item": "jacket",
+    "size": "M",
+    "color": "olive",
+    "max_price": "130.00",
+    "deadline": null
+  },
+  "ceiling": null,
+  "capturedAt": "2026-11-02T10:00:00Z",
+  "promisedBy": "2026-11-05T10:00:00Z",
+  "deliveredAt": "2026-11-04T15:00:00Z",
+  "refunded": "0.00",
+  "disputed": false,
+  "claim": {
+    "type": "wrong_item",
+    "description": "I ordered the olive jacket and got a black one."
+  },
+  "evidence": {
+    "codeFound": true,
+    "photoMatches": [],
+    "deliveryContested": false,
+    "vision": {
+      "challenge_code_found": "UNDO-DEMO",
+      "size_tag_text": "M",
+      "dominant_color": "Black",
+      "item_type": "jacket",
+      "damage_detected": false,
+      "confidence": 0.9,
+      "notes": "A black field jacket."
+    }
+  },
+  "expected": {
+    "party": "MERCHANT",
+    "reasons": [
+      "DELIVERED_COLOR_MISMATCH"
+    ]
+  },
+  "proposals": [
+    {
+      "action": "PARTIAL_REFUND_KEEP_ITEM",
+      "amount": "36.00",
+      "currency": "USD",
+      "expected": {
+        "verdict": "QUEUE",
+        "reasons": [
+          "ABOVE_AUTO_APPROVE_LIMIT"
+        ]
+      }
+    },
+    {
+      "action": "PARTIAL_REFUND_KEEP_ITEM",
+      "amount": "120.00",
+      "currency": "USD",
+      "expected": {
+        "verdict": "BLOCK",
+        "reasons": [
+          "KEEP_ITEM_OVER_MAX_PCT"
+        ]
+      }
+    }
+  ]
+}

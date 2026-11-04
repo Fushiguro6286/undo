@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { PayPalError } from "./paypal/client";
 import { CheckoutError } from "./intent/orders";
 import { ClaimError } from "./claims/claims";
+import { PolicyError } from "./policy/store";
 
 class AuthError extends Error {}
 
@@ -26,7 +27,7 @@ export async function handle(fn: () => Promise<unknown>) {
     return Response.json(await fn());
   } catch (e) {
     if (e instanceof ZodError) return Response.json({ error: "invalid input", issues: e.issues.map((i) => `${i.path.join(".")}: ${i.message}`) }, { status: 400 });
-    if (e instanceof CheckoutError || e instanceof ClaimError) return Response.json({ error: e.message }, { status: 400 });
+    if (e instanceof CheckoutError || e instanceof ClaimError || e instanceof PolicyError) return Response.json({ error: e.message }, { status: 400 });
     if (e instanceof AuthError) return Response.json({ error: e.message }, { status: 401 });
     if (e instanceof PayPalError) return Response.json({ error: e.message, paypal: { status: e.status, code: e.code, issues: e.issues } }, { status: 502 });
     console.error("[api]", (e as Error).message);

@@ -1,0 +1,60 @@
+{
+  "id": 5,
+  "name": "DELEGATED; the agent bought L when limits said M",
+  "mode": "DELEGATED",
+  "ordered": {
+    "type": "tee",
+    "color": "Sky Blue",
+    "size": "L",
+    "price": "29.00"
+  },
+  "limits": {
+    "item": "tee",
+    "size": "M",
+    "color": "sky blue",
+    "max_price": "35.00",
+    "deadline": "2026-11-06"
+  },
+  "ceiling": "35.00",
+  "capturedAt": "2026-11-02T10:00:00Z",
+  "promisedBy": "2026-11-05T10:00:00Z",
+  "deliveredAt": "2026-11-04T15:00:00Z",
+  "refunded": "0.00",
+  "disputed": false,
+  "claim": {
+    "type": "agent_mistake",
+    "description": "I said size M and my agent bought L."
+  },
+  "evidence": {
+    "codeFound": true,
+    "photoMatches": [],
+    "deliveryContested": false,
+    "vision": {
+      "challenge_code_found": "UNDO-DEMO",
+      "size_tag_text": "L",
+      "dominant_color": "Sky Blue",
+      "item_type": "tee",
+      "damage_detected": false,
+      "confidence": 0.9,
+      "notes": "A tee with a handwritten code card."
+    }
+  },
+  "expected": {
+    "party": "AGENT",
+    "reasons": [
+      "AGENT_EXCEEDED_LIMITS",
+      "LIMIT_SIZE"
+    ]
+  },
+  "proposals": [
+    {
+      "action": "AGENT_PLATFORM_PAYOUT",
+      "amount": "29.00",
+      "currency": "USD",
+      "expected": {
+        "verdict": "ALLOW",
+        "reasons": []
+      }
+    }
+  ]
+}
