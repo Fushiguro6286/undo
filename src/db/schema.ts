@@ -1,7 +1,8 @@
 // Data model from CLAUDE.md section 6. Money is numeric(12,2), read back as strings (same as PayPal).
-import { bigserial, boolean, integer, jsonb, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigserial, boolean, customType, integer, jsonb, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 const money = (name: string) => numeric(name, { precision: 12, scale: 2 });
+const bytea = customType<{ data: Buffer }>({ dataType: () => "bytea" });
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 
 export const intents = pgTable("intents", {
@@ -43,6 +44,8 @@ export const claims = pgTable("claims", {
   id: uuid("id").primaryKey().defaultRandom(),
   orderId: uuid("order_id").notNull().references(() => orders.id),
   type: text("type").notNull(),
+  description: text("description").notNull().default(""), // buyer's words: data, never instructions
+  deliveryContested: boolean("delivery_contested").notNull().default(false),
   challengeCode: text("challenge_code").notNull(),
   faultParty: text("fault_party"),
   reasons: jsonb("reasons"),
@@ -53,7 +56,8 @@ export const claims = pgTable("claims", {
 export const evidence = pgTable("evidence", {
   id: uuid("id").primaryKey().defaultRandom(),
   claimId: uuid("claim_id").notNull().references(() => claims.id),
-  photoPath: text("photo_path").notNull(),
+  photoPath: text("photo_path").notNull(), // URL path that serves the photo
+  photo: bytea("photo").notNull(), // normalized JPEG, kept in Postgres because Render's disk is wiped on deploy
   phash: text("phash"),
   visionResult: jsonb("vision_result"),
   fraudSignals: jsonb("fraud_signals"),

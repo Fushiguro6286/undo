@@ -39,6 +39,8 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
   const [mode, setMode] = useState<Mode>("CONFIRMED");
   const [order, setOrder] = useState<Order>();
   const [agentSku, setAgentSku] = useState("");
+  const [claimType, setClaimType] = useState("wrong_item");
+  const [claimText, setClaimText] = useState("");
   const [error, setError] = useState<string>();
 
   async function ask() {
@@ -76,6 +78,17 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
     } catch (e) {
       setError((e as Error).message);
     } finally {
+      setBusy(false);
+    }
+  }
+
+  async function openClaim() {
+    setBusy(true); setError(undefined);
+    try {
+      const c = await api<{ claimId: string }>("/api/claims", { orderId: order!.paypalOrderId, type: claimType, description: claimText });
+      window.location.href = `/claims/${c.claimId}`;
+    } catch (e) {
+      setError((e as Error).message);
       setBusy(false);
     }
   }
@@ -154,6 +167,23 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
               </select>
               <button onClick={agentBuys} disabled={busy}>{busy ? "Buying…" : "Agent: buy now"}</button>
             </div>
+          )}
+          {order.status === "COMPLETED" && (
+            <details>
+              <summary>Something wrong with this order?</summary>
+              <div className="stack">
+                <select value={claimType} onChange={(e) => setClaimType(e.target.value)} aria-label="What went wrong">
+                  <option value="wrong_item">Wrong item, color or size</option>
+                  <option value="damaged">Arrived damaged</option>
+                  <option value="late">Arrived late</option>
+                  <option value="agent_mistake">My agent bought the wrong thing</option>
+                  <option value="changed_mind">I changed my mind</option>
+                  <option value="other">Something else</option>
+                </select>
+                <textarea value={claimText} onChange={(e) => setClaimText(e.target.value)} maxLength={2000} rows={3} placeholder="What happened? (optional)" aria-label="What happened" />
+                <div><button onClick={openClaim} disabled={busy}>{busy ? "Opening…" : "Open a claim"}</button></div>
+              </div>
+            </details>
           )}
         </section>
       )}

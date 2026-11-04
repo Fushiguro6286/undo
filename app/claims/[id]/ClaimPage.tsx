@@ -1,0 +1,126 @@
+"use client";
+import { useCallback, useEffect, useState } from "react";
+import { productSvgDataUri } from "@/src/store/art";
+import { itemName, variantBySku, type Variant } from "@/src/store/catalog";
+
+type Vision = { challenge_code_found: string | null; size_tag_text: string | null; dominant_color: string | null; item_type: string | null; damage_detected: boolean; confidence: number; notes: string };
+type Assessment = { decision: "NEEDS_NEW_PHOTO" | "READY"; signals: string[]; returnRequired: boolean; photoMatches: { kind: string; ref: string; distance: number }[] };
+type Claim = {
+  id: string; type: string; description: string; challengeCode: string; status: string; deliveryContested: boolean;
+  order: { paypalOrderId: string; amount: string | null; chosenItem: Variant | null; intent: { mode: string; cart: { sku: string }[] | null } | null };
+  shipment: { deliveredAt: string | null; trackingNumber: string | null } | null;
+  evidence: { id: string; photoPath: string; visionResult: Vision | null }[];
+  assessment: Assessment | null;
+};
+
+const SIGNAL_TEXT: Record<string, string> = {
+  PHOTO_MATCHES_LISTING: "This photo matches the store's own listing photo.",
+  PHOTO_MATCHES_EARLIER_CLAIM: "This photo matches a photo from another claim.",
+  LOW_VISION_CONFIDENCE: "The photo was hard to read.",
+  VISION_FAILED: "The photo couldn't be analyzed automatically.",
+  DELIVERY_DATE_CONTESTED: "You disputed the delivery date.",
+};
+
+export function ClaimPage({ id }: { id: string }) {
+  const [claim, setClaim] = useState<Claim>();
+  const [file, setFile] = useState<File>();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+
+  const call = useCallback(async (path: string, init?: RequestInit) => {
+    setError(undefined);
+    const res = await fetch(path, init);
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error ?? `Request failed (${res.status})`);
+    setClaim(json);
+  }, []);
+
+  useEffect(() => {
+    call(`/api/claims/${id}`).catch((e) => setError(e.message));
+  }, [id, call]);
+
+  async function upload() {
+    if (!file) return;
+    setBusy(true);
+    const form = new FormData();
+    form.append("photo", file);
+    try {
+      await call(`/api/claims/${id}/evidence`, { method: "POST", body: form });
+      setFile(undefined);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function contest() {
+    setBusy(true);
+    try {
+      await call(`/api/claims/${id}/contest-delivery`, { method: "POST" });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!claim) return <main className="page">{error ? <p className="error" role="alert">{error}</p> : <p className="muted">Loading claim…</p>}</main>;
+
+  const item = claim.order.chosenItem ?? variantBySku(claim.order.intent?.cart?.[0]?.sku ?? "");
+  const latest = claim.evidence[0];
+  const v = latest?.visionResult;
+  const a = claim.assessment;
+
+  return (
+    <main className="page">
+      <header className="hero">
+        <p className="eyebrow">Fernleaf Goods · Claim</p>
+        <h1>Show us what arrived</h1>
+        <p className="muted">PayPal order <code>{claim.order.paypalOrderId}</code>{item ? ` · ${itemName(item)} · $${claim.order.amount}` : ""}</p>
+      </header>
+
+      <section className="card stack">
+        <p>Write this code on a piece of paper, put it next to the item, and take one photo where both are clearly visible. Include the size tag if you can.</p>
+        <p className="code" aria-label="Your one-time code">{claim.challengeCode}</p>
+        <div className="row">
+          <input type="file" accept="image/*" capture="environment" aria-label="Photo of the item with the code" onChange={(e) => setFile(e.target.files?.[0])} />
+          <button onClick={upload} disabled={!file || busy}>{busy ? "Checking photo…" : "Upload photo"}</button>
+        </div>
+        {error && <p className="error" role="alert">{error}</p>}
+      </section>
+
+      {latest && (
+        <section className="card stack">
+          <h2>{a?.decision === "NEEDS_NEW_PHOTO" ? "We need a new photo" : a?.signals.length ? "A person will review this claim" : "Photo received"}</h2>
+          {a?.decision === "NEEDS_NEW_PHOTO" && <p className="warn">We couldn&apos;t find your code <strong>{claim.challengeCode}</strong> in the photo. Please retake it with the code clearly visible.</p>}
+          {a?.signals.map((s) => <p key={s} className="warn">{SIGNAL_TEXT[s] ?? s}</p>)}
+          {a?.returnRequired && <p className="muted">For an order of this value, any remedy needs the item returned.</p>}
+          <div className="evidence">
+            {item && <figure><img src={productSvgDataUri(item.type, item.color)} alt={`Listing: ${itemName(item)}`} /><figcaption className="muted">What you ordered</figcaption></figure>}
+            <figure><img src={latest.photoPath} alt="Your photo" /><figcaption className="muted">Your photo</figcaption></figure>
+          </div>
+          {v && (
+            <dl className="facts">
+              <dt>Code seen</dt><dd>{v.challenge_code_found ?? "none"}</dd>
+              <dt>Item</dt><dd>{v.item_type ?? "unclear"}</dd>
+              <dt>Color</dt><dd>{v.dominant_color ?? "unclear"}</dd>
+              <dt>Size tag</dt><dd>{v.size_tag_text ?? "not readable"}</dd>
+              <dt>Damage</dt><dd>{v.damage_detected ? "yes" : "none seen"}</dd>
+              <dt>Confidence</dt><dd>{Math.round(v.confidence * 100)}%</dd>
+              <dt>Notes</dt><dd>{v.notes}</dd>
+            </dl>
+          )}
+          <p className="muted">Next: Undo works out who is at fault and which remedies the store&apos;s policy allows.</p>
+        </section>
+      )}
+
+      {claim.shipment?.deliveredAt && (
+        <section className="card stack">
+          <p>The store reports delivery on <strong>{new Date(claim.shipment.deliveredAt).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</strong> (tracking <code>{claim.shipment.trackingNumber}</code>).</p>
+          {claim.deliveryContested ? <p className="muted">You disputed this date. A person will review it.</p> : <div><button onClick={contest} disabled={busy}>That date is wrong</button></div>}
+        </section>
+      )}
+    </main>
+  );
+}

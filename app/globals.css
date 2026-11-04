@@ -39,3 +39,8 @@ h2 { margin: 0 0 8px; font-size: 20px; }
 .product h3 { font-size: 15px; margin: 8px 0 2px; }
 .product p { margin: 0; font-size: 14px; }
 @media (max-width: 520px) { .facts { grid-template-columns: 1fr; } .facts dd { margin-bottom: 6px; } }
+.code { font: 700 clamp(28px, 7vw, 44px)/1.1 ui-monospace, "Cascadia Mono", Menlo, monospace; letter-spacing: .06em; margin: 0; padding: 14px; text-align: center; border: 2px dashed var(--accent); border-radius: 12px; background: var(--accent-soft); }
+.evidence { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.evidence figure { margin: 0; }
+.evidence img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); width: 100%; }

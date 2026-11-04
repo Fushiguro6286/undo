@@ -13,7 +13,13 @@ import { toCents } from "../money/cents";
 
 export class CheckoutError extends Error {}
 
-export async function createCheckout(mode: IntentRecord["mode"], buyerRef: string, limits: Limits, cart: CartLine[] | null) {
+/**
+ * `pool`: judge-mode order pool only (scripts/seed-order-pool.ts). Pays with PayPal's published sandbox test card
+ * instead of a buyer approval (spike S7), so a CONFIRMED order comes back already captured.
+ */
+type PoolCard = { name: string; number: string; expiry: string; security_code: string };
+
+export async function createCheckout(mode: IntentRecord["mode"], buyerRef: string, limits: Limits, cart: CartLine[] | null, pool?: { card: PoolCard }) {
   const record: IntentRecord = { id: randomUUID(), buyer_ref: buyerRef, mode, limits, cart: mode === "CONFIRMED" ? cart : null, created_at: new Date().toISOString() };
   const hash = intentHash(record);
   let body;
@@ -22,8 +28,10 @@ export async function createCheckout(mode: IntentRecord["mode"], buyerRef: strin
   } catch (e) {
     throw new CheckoutError((e as Error).message);
   }
+  if (pool) body = { ...body, payment_source: { card: pool.card } } as unknown as typeof body;
   const order = await merchant().request("POST", "/v2/checkout/orders", { requestId: `${record.id}:create`, body });
   const amount = body.purchase_units[0].amount.value;
+  const cap = order.status === "COMPLETED" ? order.purchase_units?.[0]?.payments?.captures?.[0] : undefined;
   await db().transaction(async (tx) => {
     await tx.insert(intents).values({ id: record.id, buyerRef, limits, cart: record.cart, mode, hash, createdAt: new Date(record.created_at) });
     await tx.insert(orders).values({
@@ -31,8 +39,11 @@ export async function createCheckout(mode: IntentRecord["mode"], buyerRef: strin
       intentId: record.id,
       paypalIntent: body.intent,
       ceiling: mode === "DELEGATED" ? amount : null,
-      amount: mode === "CONFIRMED" ? amount : null,
-      status: "CREATED",
+      amount: cap?.amount.value ?? (mode === "CONFIRMED" ? amount : null),
+      status: cap?.status === "COMPLETED" ? "COMPLETED" : "CREATED",
+      captureId: cap?.id ?? null,
+      promisedBy: cap ? promisedBy(new Date()) : null,
+      pool: !!pool,
     });
   });
   return { orderId: order.id as string, hash };
