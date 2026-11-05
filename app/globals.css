@@ -77,14 +77,15 @@ input, select, textarea, .policy-text {
 input:focus, select:focus, textarea:focus, .policy-text:focus { outline: none; border-color: var(--verdict); }
 textarea, .policy-text { width: 100%; resize: vertical; }
 label > strong { font: 400 26px/1.15 var(--font-display); }
-button, .button-link, .uc-button {
+/* AG Studio styles its own buttons (class ag-*); the app's button style must not leak into them. */
+button:not([class*="ag-"]), .button-link, .uc-button {
   font: 600 12.5px/1 var(--font-ui); text-transform: uppercase; letter-spacing: .12em;
   padding: 14px 20px; border: 1px solid var(--verdict); border-radius: 0; background: var(--verdict); color: #1a0f0a; cursor: pointer;
   transition: transform .12s, background .12s, box-shadow .12s; text-decoration: none; display: inline-block; text-align: center;
 }
-button:hover:not(:disabled), .button-link:hover, .uc-button:hover { background: #ff8257; transform: translateY(-1px); box-shadow: 0 3px 0 #8f3517; }
-button:active:not(:disabled), .button-link:active { transform: translateY(1px); box-shadow: none; }
-button:disabled { opacity: .5; cursor: progress; box-shadow: none; }
+button:not([class*="ag-"]):hover:not(:disabled), .button-link:hover, .uc-button:hover { background: #ff8257; transform: translateY(-1px); box-shadow: 0 3px 0 #8f3517; }
+button:not([class*="ag-"]):active:not(:disabled), .button-link:active { transform: translateY(1px); box-shadow: none; }
+button:not([class*="ag-"]):disabled { opacity: .5; cursor: progress; box-shadow: none; }
 .button-link { background: transparent; color: var(--ink); border-color: var(--rule); }
 .button-link:hover { background: var(--paper); box-shadow: none; }
 
@@ -308,7 +309,7 @@ details > summary::marker { color: var(--verdict); }
 .uc-pad { padding: 16px; }
 button.uc-ghost, .uc-ghost { background: var(--card); color: var(--ink); box-shadow: none; }
 button.uc-ghost:hover:not(:disabled) { box-shadow: 3px 3px 0 var(--verdict); }
-.uc-widget { height: 100%; overflow: auto; display: grid; gap: 12px; align-content: start; padding: 4px 2px; color: var(--ink); font-family: var(--font-ui); }
+.uc-widget { height: 100%; overflow: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; padding: 4px 2px; color: var(--ink); font-family: var(--font-ui); }
 .uc-widget h4 { margin: 4px 0 0; font: 400 20px/1.1 var(--font-display); }
 .uc-widget button, .uc-button { padding: 8px 12px; font-size: 11.5px; box-shadow: 2px 2px 0 var(--verdict); }
 .uc-widget input, .uc-widget select { padding: 7px 9px; font-size: 14px; min-width: 0; }
@@ -335,7 +336,7 @@ button.uc-ghost:hover:not(:disabled) { box-shadow: 3px 3px 0 var(--verdict); }
 .uc-reasons { margin: 0; padding-left: 18px; font-size: 13px; display: grid; gap: 2px; }
 .uc-reasons code { font-size: 11.5px; color: var(--verdict); }
 .uc-timeline { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2.5px solid var(--ink); display: grid; gap: 10px; font-size: 13px; }
-.uc-step { position: relative; display: grid; grid-template-columns: 78px 1fr; gap: 8px; }
+.uc-step { position: relative; display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 8px; overflow-wrap: anywhere; }
 .uc-step::before { content: ""; position: absolute; left: -26px; top: 2px; width: 10px; height: 14px; border-radius: 6px; border: 2.5px solid var(--ink); background: var(--card); }
 .uc-step-paypal::before, .uc-step-fault::before { border-color: var(--accent); background: var(--accent-soft); }
 .uc-step-blocked::before { border-color: var(--verdict); background: var(--verdict-soft); }
