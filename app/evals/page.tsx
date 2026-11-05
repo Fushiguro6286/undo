@@ -16,7 +16,7 @@ function Tile({ label, value, note }: { label: string; value: string; note?: str
   return (
     <div className="card eval-tile">
       <p className="muted small">{label}</p>
-      <p className="eval-value">{value}</p>
+      <p className={`eval-value${/\d/.test(value) ? "" : " eval-word"}`}>{value}</p>
       {note && <p className="muted small">{note}</p>}
     </div>
   );
