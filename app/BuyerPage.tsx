@@ -7,7 +7,7 @@ import { productSvgDataUri } from "@/src/store/art";
 import { itemName, type Product, type Variant } from "@/src/store/catalog";
 import type { Limits } from "@/src/intent/limits";
 
-type Extracted = { limits: Limits; description: string; matches: Variant[] };
+type Extracted = { limits: Limits; description: string; matches: Variant[]; note?: string | null };
 type Mode = "CONFIRMED" | "DELEGATED";
 type Order = {
   paypalOrderId: string; paypalIntent: string; status: string; amount: string | null; ceiling: string | null; captureId: string | null;
@@ -33,7 +33,7 @@ function buyerRef() {
 
 export function BuyerPage({ products, variants }: { products: Product[]; variants: Variant[] }) {
   const [sdkReady, setSdkReady] = useState(false);
-  const [request, setRequest] = useState("A sky-blue tee, size M, under $35, by Friday");
+  const [request, setRequest] = useState("A sky-blue tee, size M, under $35, within a week");
   const [busy, setBusy] = useState(false);
   const [extracted, setExtracted] = useState<Extracted>();
   const [sku, setSku] = useState<string>();
@@ -145,7 +145,7 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
                 ))}
               </div>
             ) : (
-              <p className="muted">No item in the store matches all of these limits right now.</p>
+              <p className="muted">{extracted?.note ?? "No item in the store matches all of these limits right now."}</p>
             )}
 
             <div className="modes" role="radiogroup" aria-label="How do you approve?">

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canonicalJson, intentHash, type IntentRecord } from "./record";
-import { describeLimits, limitsText, limitViolations, matchVariants, type Limits } from "./limits";
+import { deadlineNote, describeLimits, limitsText, limitViolations, matchVariants, type Limits } from "./limits";
 import { confirmedOrderBody, delegatedOrderBody } from "./checkout";
 import { variantBySku } from "../store/catalog";
 
@@ -66,5 +66,18 @@ describe("order bodies", () => {
     expect(b.purchase_units[0].amount.value).toBe("35.00");
     expect(b.purchase_units[0].items[0].name).toBe(limitsText(limits));
     expect(() => delegatedOrderBody("h", { ...limits, max_price: null })).toThrow(/maximum price/);
+  });
+});
+
+describe("deadline note", () => {
+  const l: Limits = { item: "tee", size: "M", color: "sky blue", max_price: "35.00", deadline: "2026-11-06" };
+  it("explains a deadline no delivery can meet", () => {
+    const thu = new Date("2026-11-05T10:00:00Z"); // promised Sat Nov 7
+    expect(matchVariants(l, thu)).toEqual([]);
+    expect(deadlineNote(l, thu)).toBe("Delivery takes 2 days, so nothing can arrive by Fri, Nov 6. Ask for a later date.");
+  });
+  it("stays silent when the deadline can be met", () => {
+    expect(deadlineNote(l, new Date("2026-11-04T10:00:00Z"))).toBeNull();
+    expect(deadlineNote({ ...l, deadline: null }, new Date())).toBeNull();
   });
 });

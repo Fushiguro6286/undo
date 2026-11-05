@@ -9,7 +9,7 @@ export function model() {
   // google reads GOOGLE_GENERATIVE_AI_API_KEY; anthropic reads ANTHROPIC_API_KEY
   const base =
     provider === "google" ? google(process.env.LLM_MODEL || "gemini-3.5-flash-lite")
-    : provider === "anthropic" ? anthropic(process.env.LLM_MODEL || "claude-sonnet-5-5")
+    : provider === "anthropic" ? anthropic(process.env.LLM_MODEL || "claude-opus-5-5")
     : null;
   if (!base) throw new Error(`LLM_PROVIDER "${provider}" is not supported (use google or anthropic)`);
   return wrapLanguageModel({ model: base, middleware: spendCap });

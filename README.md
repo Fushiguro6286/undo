@@ -127,7 +127,7 @@ These are PayPal **sandbox** accounts: no real money can move.
 
 ### Try it by hand
 
-1. [The store](https://undo-nu.vercel.app): ask for "a sky-blue tee, size M, under $35, by Friday", choose CONFIRMED or DELEGATED, approve on PayPal as a sandbox buyer.
+1. [The store](https://undo-nu.vercel.app): ask for "a sky-blue tee, size M, under $35, within a week", choose CONFIRMED or DELEGATED, approve on PayPal as a sandbox buyer.
 2. On the order, open a claim and upload a sample photo (or your own photo with the challenge code written on paper).
 3. See the fault ruling and the remedies; pick one. Refunds are confirmed by PayPal's webhook.
 4. [Merchant console](https://undo-nu.vercel.app/merchant): approval queue, evidence viewer (listing photo next to the buyer's), claim timeline, audit-chain badge. Ask the Claims assistant to "refund it in full" on a $120 jacket claim: the $120 draft is blocked by the policy and the $36 rule-made refund is queued for one tap. A plain AG Grid version of the console is at [`/merchant/grid`](https://undo-nu.vercel.app/merchant/grid).
@@ -162,8 +162,8 @@ No tool can approve a purchase, record consent or move money directly.
 ```
 
 **Try it:**
-1. "Buy me a sky-blue tee, size M, under $35, by Friday. I want to approve the exact item." → open the approval link, log in as a sandbox buyer, approve.
-2. Or: "Use my agent budget: up to $35 for a blue tee, size M, by Friday, and pick it yourself." (DELEGATED: you approve the ceiling and limits; the agent's pick is bought at its real price.)
+1. "Buy me a sky-blue tee, size M, under $35, within a week. I want to approve the exact item." → open the approval link, log in as a sandbox buyer, approve.
+2. Or: "Use my agent budget: up to $35 for a blue tee, size M, within a week, and pick it yourself." (DELEGATED: you approve the ceiling and limits; the agent's pick is bought at its real price.)
 3. "The tee arrived in navy. Open a claim." → open the upload link and upload a photo with the code visible (sample: `/samples/wrong-color.jpg`).
 4. "What are my options?" → "Take the keep-it refund."
 

@@ -9,7 +9,7 @@ import { chooseOffer } from "../claims/resolve";
 import { db } from "../db";
 import { orders } from "../db/schema";
 import { extractLimits } from "../intent/extract";
-import { describeLimits, Limits, matchVariants } from "../intent/limits";
+import { deadlineNote, describeLimits, Limits, matchVariants } from "../intent/limits";
 import { CheckoutError, createCheckout } from "../intent/orders";
 import { toCents } from "../money/cents";
 import { itemName, variantBySku } from "../store/catalog";
@@ -54,6 +54,7 @@ export function buildServer() {
           limits,
           summary: describeLimits(limits),
           matches,
+          ...(matches.length ? {} : { why_no_matches: deadlineNote(limits) ?? "no store item fits every limit" }),
           next: "Call get_approval_link: CONFIRMED with a cart the person agreed to, or DELEGATED with these limits (max_price is the ceiling) and optionally agent_pick_sku.",
         };
       }),

@@ -1,7 +1,7 @@
 // The person's limits (what they allowed the agent to buy), matching against the catalog, and limit checks.
 // limitViolations is also the fault engine's step 5 check (agent exceeded limits).
 import { z } from "zod";
-import { promisedBy, VARIANTS, type Variant } from "../store/catalog";
+import { PROMISE_DAYS, promisedBy, VARIANTS, type Variant } from "../store/catalog";
 import { toCents } from "../money/cents";
 
 export const Limits = z.object({
@@ -44,6 +44,12 @@ export function describeLimits(l: Limits): string {
   if (l.max_price) parts.push(`up to $${l.max_price}`);
   if (l.deadline) parts.push(`delivered by ${day(l.deadline)}`);
   return parts.join(", ");
+}
+
+/** Why nothing matches when the deadline alone rules every item out (delivery takes PROMISE_DAYS), else null. */
+export function deadlineNote(l: Limits, now = new Date()): string | null {
+  if (!l.deadline || isoDay(promisedBy(now)) <= l.deadline) return null;
+  return `Delivery takes ${PROMISE_DAYS} days, so nothing can arrive by ${day(l.deadline)}. Ask for a later date.`;
 }
 
 /** The DELEGATED order description and item name. PayPal truncates after 127 characters. */

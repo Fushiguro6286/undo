@@ -28,6 +28,7 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 
 **Clicks:**
 1. Type: `Buy me a sky-blue tee, size M, under $35, by Friday. I want to approve the exact item.`
+   - **"by Friday" only works if you record Mon-Wed** (delivery takes 2 days). Recording Thu-Sun: say "within a week" instead, or Claude gets no matching items.
 2. Claude calls `propose_purchase`, then `get_approval_link`. Click the PayPal link.
 3. Log in as the sandbox buyer. **Hold 2 s on "Classic Tee, Sky Blue, M · $29.00".** Click **Pay**.
 4. The Undo "Approved on PayPal" page shows the **intent hash**. Hold 2 s, zoom on the hash.
