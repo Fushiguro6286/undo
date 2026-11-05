@@ -7,8 +7,8 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 ## Before recording
 
 1. **Prep state (5 min before):** `npx tsx --env-file=.env --env-file=.env.neon scripts/demo-prep.ts https://undo-nu.vercel.app`. It prints:
-   - the **beat 2 tee order id** (a paid sandbox order reserved for you). Last run: `4KP36830SL452453B`;
-   - the **beat 5 jacket claim** (opened, photo checked, waiting at its offers). Last run: claim `62390808-b163-40f5-8a2f-1e25f3709db0`.
+   - the **beat 2 tee order id** (a paid sandbox order reserved for you). Last run (Nov 5, after the night-edition design): `01R056566F834042R`;
+   - the **beat 5 jacket claim** (opened, photo checked, waiting at its offers). Last run: claim `9dbd72d8-f562-4b14-b370-e9cac20298db` (shows as `9dbd72d8` in the evidence picker).
    Each run reserves new ones, so use the ids from the latest run. If the pool runs low: `npm run seed`.
 2. **Browser tabs, in order** (one window, 1920×1080, zoom 110%, a clean profile so no extensions show):
    1. `/merchant` (log in once; the login is remembered for the tab), **Work** mode.
