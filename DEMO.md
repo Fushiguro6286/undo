@@ -1,6 +1,6 @@
-# Demo video script (2:55)
+# Demo video script (2:40)
 
-Six beats from spec section 19. Total **2:55**. Narration runs under 2.2 words per second, so each beat's lines fit its slot. Captions: [`docs/captions.srt`](docs/captions.srt).
+Six beats from spec section 19. Total **2:40** (27/32/22/22/37/20 s). Narration runs under 2.2 words per second, so each beat's lines fit its slot. Captions: [`docs/captions.srt`](docs/captions.srt).
 
 Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal sandbox.
 
@@ -22,7 +22,7 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
    - The AI runs on Gemini's free tier, which can be slow. If a photo check times out, the claim goes to a person (UNCLEAR). Re-run `demo-prep.ts` for a fresh order and retake.
    - The parts where you wait for the AI or PayPal (10–80 s) are meant to be cut in editing. Never speed up or fake a number on screen.
 
-## Beat 1 · Hook and purchase · 0:00–0:30 (30 s)
+## Beat 1 · Hook and purchase · 0:00–0:27 (27 s)
 
 **Screen:** open on `/merchant` (Work mode: approval queue, evidence viewer, timeline) for 3 s. Cut to Claude Desktop.
 
@@ -34,9 +34,9 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 4. The Undo "Approved on PayPal" page shows the **intent hash**. Hold 2 s, zoom on the hash.
 
 **Narration:**
-> Agents are buying from your store. When one goes wrong, who's at fault? Undo answers that, and settles it through PayPal in minutes. Here my agent shops for a tee. I approve the exact item on PayPal, and Undo stores what I approved, hashed into the PayPal order's custom ID.
+> Agents are buying from your store. When one goes wrong, who's at fault? Undo answers that, and settles it through PayPal in minutes. My agent shops for a tee. I approve the exact item on PayPal, and Undo hashes what I approved into the PayPal order's custom ID.
 
-## Beat 2 · Merchant at fault · 0:30–1:05 (35 s)
+## Beat 2 · Merchant at fault · 0:27–0:59 (32 s)
 
 **Screen:** Claude Desktop, then the claim page, then the console.
 
@@ -49,9 +49,9 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 6. Switch to `/merchant`, click **Refresh**: the claim shows the refund, and the **timeline** ends with "Refund confirmed by PayPal".
 
 **Narration:**
-> A navy tee shows up. The buyer's agent opens a claim, and Undo asks for a photo with a one-time code. The vision model reads the color, the size tag and the code. A deterministic fault engine compares it with the PayPal order: the merchant is at fault. The store's own rules make the offers. The agent picks the keep-it refund, and PayPal confirms it. Both screens update.
+> A navy tee shows up. The agent opens a claim, and Undo asks for a photo with a one-time code. The vision model reads the color, size tag and code. A deterministic fault engine compares it with the PayPal order: the merchant is at fault. The store's rules make the offers. The agent picks the keep-it refund, and PayPal confirms it.
 
-## Beat 3 · Agent at fault · 1:05–1:30 (25 s)
+## Beat 3 · Agent at fault · 0:59–1:21 (22 s)
 
 **Screen:** `/judge`, card **3 · Agent at fault**.
 
@@ -61,9 +61,9 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 3. Click **Open the claim page** and hold on **"Paid by your agent's platform: $29.00 … confirmed by PayPal"**.
 
 **Narration:**
-> Now a delegated purchase. The person approved a spending limit for a size M tee, and the agent picked later. It bought a large. The person didn't approve that, and neither did the store. So the agent is at fault, and the agent platform pays the buyer back, through PayPal Payouts.
+> Now a delegated purchase. The person approved a spending limit for a size M tee; the agent chose later and bought a large. Nobody approved that, so the agent is at fault, and the agent platform pays the buyer back through PayPal Payouts.
 
-## Beat 4 · Denied · 1:30–1:55 (25 s)
+## Beat 4 · Denied · 1:21–1:43 (22 s)
 
 **Screen:** `/judge`, card **2 · Denied**, then the claim page.
 
@@ -73,9 +73,9 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 3. Point the cursor at **"take it to PayPal's Resolution Center"**.
 
 **Narration:**
-> "My agent bought this without asking me." But the person approved this exact cart on PayPal, the hash still matches, and the right item arrived. So the claim is denied, with the reasons, and with a link to escalate to PayPal, which always stays the final arbiter.
+> "My agent bought this without asking me." But the person approved this exact cart on PayPal, the hash still matches, and the right item arrived. Denied, with reasons, and a link to escalate to PayPal, which stays the final arbiter.
 
-## Beat 5 · Trust moment in AG Studio · 1:55–2:35 (40 s)
+## Beat 5 · Trust moment in AG Studio · 1:43–2:20 (37 s)
 
 **Screen:** `/merchant`.
 
@@ -89,7 +89,7 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 **Narration:**
 > A hundred-and-twenty-dollar jacket. The merchant asks the AI assistant to refund it in full. The assistant can only draft. The policy evaluator blocks the draft: keep-it refunds are capped at thirty percent. The thirty-six dollar refund the rules allow goes to the approval queue, and one tap pays it. No AI ever touches a money tool, and every step is on a hash-chained audit log.
 
-## Beat 6 · Close · 2:35–2:55 (20 s)
+## Beat 6 · Close · 2:20–2:40 (20 s)
 
 **Screen:** `/evals`.
 
@@ -99,7 +99,7 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 3. End card (edit in): **PayPal APIs used:** Orders v2 (capture + authorize), Payments v2 (capture authorization, refunds), Payouts, Disputes, Webhooks, JS SDK v6 · github link · undo-nu.vercel.app.
 
 **Narration:**
-> If the buyer goes to PayPal anyway, Undo stops making offers and answers in PayPal. Here the store was at fault, so it accepts, and PayPal closes the case. Thirteen scenarios, measured in the sandbox: every fault right, every remedy right, zero policy violations.
+> If the buyer goes to PayPal anyway, Undo answers there. Here the store was at fault, so it accepts, and PayPal closes the case. Thirteen scenarios, measured in the sandbox: every fault right, every remedy right, zero policy violations.
 
 ## If something goes wrong on camera
 
