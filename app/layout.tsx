@@ -1,9 +1,9 @@
 import "./globals.css";
-import { IBM_Plex_Mono, Instrument_Serif, Schibsted_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono, Playfair_Display, Schibsted_Grotesk } from "next/font/google";
 import { STORE_NAME } from "@/src/store/catalog";
 
 // Display serif for rulings and headlines, a newspaper grotesk for the interface, a typewriter mono for evidence.
-const display = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["normal", "italic"], variable: "--font-display" });
+const display = Playfair_Display({ subsets: ["latin"], weight: ["400", "500", "600"], style: ["normal", "italic"], variable: "--font-display" });
 const ui = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-ui" });
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-mono" });
 
