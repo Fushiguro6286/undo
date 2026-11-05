@@ -2,6 +2,7 @@
 // One live judge scenario: reserve a pool order and open the claim (server), then upload the sample photo and pick
 // the remedy through the same public endpoints a buyer's agent uses. Every step shown is a real response.
 import { useState } from "react";
+import { Stamp } from "../Stamp";
 
 type Offer = { id: string; action: string; amount: string | null; explanation: { label: string } | null };
 type Claim = { status: string; faultParty: string | null; reasons: { code: string }[] | null; offers: Offer[] };
@@ -19,6 +20,7 @@ export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string;
   const [steps, setSteps] = useState<string[]>([]);
   const [claimId, setClaimId] = useState<string>();
   const [paid, setPaid] = useState(false);
+  const [verdict, setVerdict] = useState<{ party: string | null; sub: string }>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
 
@@ -28,6 +30,7 @@ export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string;
     setSteps([]);
     setClaimId(undefined);
     setPaid(false);
+    setVerdict(undefined);
     const push = (t: string) => setSteps((s) => [...s, t]);
     try {
       const j = await post("/api/judge/run", { scenario });
@@ -44,6 +47,7 @@ export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string;
       const { result } = await post(`/api/claims/${j.claimId}/choose`, { offer_id: offer.id });
       const ids = [result.refund?.refundId && `PayPal refund ${result.refund.refundId}`, result.payout?.payoutBatchId && `PayPal payout batch ${result.payout.payoutBatchId}`].filter(Boolean);
       setPaid(ids.length > 0);
+      setVerdict({ party: c.faultParty, sub: result.refund ? `refund $${offer.amount}` : result.payout ? `payout $${offer.amount}` : String(result.status).toLowerCase().replace(/_/g, " ") });
       push(`Buyer's agent picks ${label(offer)} → ${result.status}${ids.length ? ` · ${ids.join(" · ")}` : ""}`);
     } catch (e) {
       setError((e as Error).message);
@@ -54,7 +58,7 @@ export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string;
 
   return (
     <article className="card judge-run">
-      <h2>{title}</h2>
+      <h2><span className="num">{title.split(" · ")[0]}</span>{title.split(" · ").slice(1).join(" · ")}</h2>
       <p>{blurb}</p>
       <p className="muted small">Expected: {expect}</p>
       <div className="row">
@@ -65,6 +69,7 @@ export function JudgeRun({ scenario, title, blurb, expect }: { scenario: string;
           {steps.map((s, i) => <li key={i}>{s}</li>)}
         </ol>
       )}
+      {verdict && <Stamp party={verdict.party} sub={verdict.sub} />}
       {error && <p className="error" role="alert">{error}</p>}
       {claimId && !busy && (
         <p className="small">

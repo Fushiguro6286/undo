@@ -169,3 +169,7 @@ Full daily steps and working rules: `TASKS.md`. Spec: `CLAUDE.md`. Human setup s
 - **Links:** demo, /judge, /evals, /merchant return 200. GitHub links 404 until the repo is public (it is PRIVATE; MIT is detected).
 - **Waiting on human:** record and edit the video (≤ 2:55), upload public to YouTube, put its link in DEVPOST.md; fill the logins in the private testing field; make the repo public; save the Devpost draft.
 
+
+### Nov 5 (design pass: "The Ruling")
+- **Done:** case-file look across every page. Instrument Serif headlines, Schibsted Grotesk interface, IBM Plex Mono for evidence; newsprint paper in light mode and warm ink in dark; one vermilion color used only for verdicts. A judge-mode ticker; the home hero is an evidence board (approved / bought / arrived, pinned records, a thread, and a rubber-stamp ruling); rulings on claims and judge runs appear as stamps; receipts get torn edges; the merchant console and AG Grid fallback use the same theme. Reduced-motion respected. Checked locally in light and dark, at desktop and 390 px (no horizontal scroll), no console errors; 110 tests and build pass. Every label in `DEMO.md` kept.
+- **Next:** check the hosted site after deploy; human tasks unchanged (video, Devpost TODOs, public repo, AG Grid terms, Neon usage).

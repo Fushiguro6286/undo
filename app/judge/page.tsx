@@ -24,16 +24,18 @@ export default function Page() {
     <main className="page">
       <header className="hero">
         <p className="eyebrow">Undo · judge mode</p>
-        <h1>Try Undo in the PayPal sandbox</h1>
+        <h1>Three rulings. <em>Real sandbox money.</em></h1>
         <p className="muted">
           {STORE_NAME} is a fictional store. Every button below runs the real flow on a paid sandbox order: the vision model reads the photo, the
           fault engine decides, the store&apos;s rules make the offers, and PayPal moves the (sandbox) money.
         </p>
       </header>
 
+      <div className="judge-runs">
       <JudgeRun scenario="merchant" title="1 · Merchant at fault" blurb="The buyer ordered a sky-blue tee and a navy one arrived." expect="MERCHANT; the buyer's agent picks the keep-it partial refund; PayPal refunds it (auto-approved, inside the store's limit)." />
       <JudgeRun scenario="denial" title="2 · Denied" blurb="“My agent bought this without asking me.” The person approved this exact cart on PayPal, and the right item arrived." expect="BUYER; denied, citing the PayPal approval and the intent hash, with Escalate to PayPal offered." />
       <JudgeRun scenario="agent" title="3 · Agent at fault" blurb="The person approved a ceiling for a size M tee. Their agent bought size L." expect="AGENT; the agent platform pays the buyer through PayPal Payouts." />
+      </div>
 
       <section className="card">
         <h2>The other ten scenarios</h2>

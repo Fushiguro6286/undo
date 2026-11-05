@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { productSvgDataUri } from "@/src/store/art";
 import { itemName, variantBySku, type Variant } from "@/src/store/catalog";
+import { Stamp } from "../../Stamp";
 
 type Vision = { challenge_code_found: string | null; size_tag_text: string | null; dominant_color: string | null; item_type: string | null; damage_detected: boolean; confidence: number; notes: string };
 type Assessment = { decision: "NEEDS_NEW_PHOTO" | "READY"; signals: string[]; returnRequired: boolean; photoMatches: { kind: string; ref: string; distance: number }[] };
@@ -151,8 +152,13 @@ export function ClaimPage({ id }: { id: string }) {
 
       {claim.faultParty && (
         <section className="card stack" aria-live="polite">
-          <p className="eyebrow">Decision</p>
-          <h2>{PARTY_TEXT[claim.faultParty] ?? claim.faultParty}</h2>
+          <div className="verdict">
+            <div>
+              <p className="eyebrow">Decision</p>
+              <h2>{PARTY_TEXT[claim.faultParty] ?? claim.faultParty}</h2>
+            </div>
+            <Stamp party={claim.faultParty} sub={refund?.status === "CONFIRMED" ? `refund confirmed by PayPal` : payout?.status === "CONFIRMED" ? "payout confirmed by PayPal" : undefined} />
+          </div>
           {claim.reasons?.some((r) => r.code === "CONFIRMED_CART_MATCHES") && claim.order.intent && (
             <p className="muted">
               You approved this exact cart on PayPal (order <code>{claim.order.paypalOrderId}</code>), and the item in your photo matches it. The record of what you
@@ -205,7 +211,7 @@ export function ClaimPage({ id }: { id: string }) {
             <figure><img src={latest.photoPath} alt="Your photo" /><figcaption className="muted">Your photo</figcaption></figure>
           </div>
           {v && (
-            <dl className="facts">
+            <div className="receipt-wrap"><dl className="facts receipt">
               <dt>Code seen</dt><dd>{v.challenge_code_found ?? "none"}</dd>
               <dt>Item</dt><dd>{v.item_type ?? "unclear"}</dd>
               <dt>Color</dt><dd>{v.dominant_color ?? "unclear"}</dd>
@@ -213,7 +219,7 @@ export function ClaimPage({ id }: { id: string }) {
               <dt>Damage</dt><dd>{v.damage_detected ? "yes" : "none seen"}</dd>
               <dt>Confidence</dt><dd>{Math.round(v.confidence * 100)}%</dd>
               <dt>Notes</dt><dd>{v.notes}</dd>
-            </dl>
+            </dl></div>
           )}
         </section>
       )}

@@ -10,8 +10,9 @@ import { ApprovalQueue, ClaimTimeline, EvidenceViewer, refresh, useConsole } fro
 if (process.env.NODE_ENV !== "production") enableStudioDevValidations();
 
 // Every color is a token from app/globals.css, so the console follows the app's light and dark mode.
-const FONT = 'system-ui, -apple-system, "Segoe UI", sans-serif';
-const line = { width: 1, color: "var(--line)" };
+const FONT = 'var(--font-ui), system-ui, sans-serif';
+const DISPLAY = 'var(--font-display), Georgia, serif';
+const line = { width: 1.5, color: "var(--rule)" };
 const theme = studioTheme.withParams({
   fontFamily: FONT,
   foregroundColor: "var(--ink)",
@@ -28,15 +29,15 @@ const theme = studioTheme.withParams({
   studioCanvasBackgroundColor: "var(--bg)",
   studioWidgetBackgroundColor: "var(--card)",
   studioWidgetBorder: line,
-  studioWidgetBorderRadius: 14,
+  studioWidgetBorderRadius: 2,
   studioCanvasFontFamily: FONT,
-  studioWidgetTitleFontFamily: FONT,
-  studioWidgetTitleFontSize: 18,
-  studioWidgetTitleFontWeight: 600,
+  studioWidgetTitleFontFamily: DISPLAY,
+  studioWidgetTitleFontSize: 24,
+  studioWidgetTitleFontWeight: 400,
   studioWidgetTitleTextColor: "var(--ink)",
   gridHeaderTextColor: "var(--muted)",
   gridHeaderFontWeight: 600,
-  gridRowBorder: line,
+  gridRowBorder: { width: 1, color: "var(--line)" },
   gridWrapperBorder: false,
 });
 

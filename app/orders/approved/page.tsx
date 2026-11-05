@@ -1,4 +1,5 @@
 // PayPal sends the buyer here after they approve an order created from an agent's approval link (?token=ORDER_ID).
+import { Stamp } from "../../Stamp";
 import { completeApproval, fulfillDelegated, getOrder } from "@/src/intent/orders";
 import { itemName, variantBySku } from "@/src/store/catalog";
 
@@ -29,16 +30,17 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
         <p className="eyebrow">Fernleaf Goods · PayPal approval</p>
         <h1>{error ? "Something went wrong" : "Approved on PayPal"}</h1>
       </header>
+      {order && <Stamp text={order.status === "AUTHORIZED" ? "Limit approved" : "Approved"} sub="on PayPal, by the buyer" tone="ok" />}
       <section className="card stack">
         {error && <p className="error" role="alert">{error}</p>}
         {order && (
-          <dl className="facts">
+          <div className="receipt-wrap"><dl className="facts receipt">
             <dt>PayPal order</dt><dd><code>{order.paypalOrderId}</code></dd>
             <dt>Mode</dt><dd>{order.intent?.mode === "DELEGATED" ? "Your agent buys inside the limits you approved" : "You approved this exact cart"}</dd>
             <dt>Status</dt><dd>{order.status === "COMPLETED" ? `Paid $${order.amount}` : order.status === "AUTHORIZED" ? `Up to $${order.ceiling} reserved; your agent has not picked yet` : order.status}</dd>
             {pick && <><dt>Agent bought</dt><dd>{itemName(pick)} · ${pick.price}{chosen?.limit_violations.length ? <span className="warn"> · outside your limits</span> : " · inside your limits"}</dd></>}
-            <dt>Intent hash</dt><dd className="hash">{order.intent?.hash}</dd>
-          </dl>
+            <dt>Intent hash</dt><dd><span className="hash">{order.intent?.hash}</span></dd>
+          </dl></div>
         )}
         <p className="muted">You can close this tab and go back to your agent.</p>
       </section>

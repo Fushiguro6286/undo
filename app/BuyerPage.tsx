@@ -2,6 +2,7 @@
 import Script from "next/script";
 import { useState } from "react";
 import { PayPalButton } from "./PayPalButton";
+import { Stamp } from "./Stamp";
 import { productSvgDataUri } from "@/src/store/art";
 import { itemName, type Product, type Variant } from "@/src/store/catalog";
 import type { Limits } from "@/src/intent/limits";
@@ -101,11 +102,29 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
       <Script src="https://www.sandbox.paypal.com/web-sdk/v6/core" onLoad={() => setSdkReady(true)} onReady={() => window.paypal && setSdkReady(true)} />
       <header className="hero">
         <p className="eyebrow">Fernleaf Goods · PayPal sandbox demo</p>
-        <h1>Let your agent shop. Stay in charge.</h1>
+        <h1>Let your agent shop. <em>Stay in charge.</em></h1>
         <p className="muted">Tell your agent what to buy. You approve on PayPal: either the exact cart, or a spending limit the agent must stay inside.</p>
       </header>
 
+      {/* What Undo compares when something goes wrong: an illustration, not live data. */}
+      <figure className="board" aria-label="Undo compares what you approved, what PayPal says was bought, and what arrived, then rules who is at fault">
+        <svg className="thread" viewBox="0 0 300 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M50 40 C 58 66, 110 70, 142 70" /><path d="M150 40 L 150 66" /><path d="M250 40 C 242 66, 190 70, 158 70" />
+        </svg>
+        <div className="record" style={{ "--tilt": "-2.5deg", "--d": ".05s" } as React.CSSProperties}>
+          <small>01 · What you approved</small><b>Sky-blue tee, size M, up to $35</b><span>intent hash 9f2c…e71a</span>
+        </div>
+        <div className="record" style={{ "--tilt": "1.5deg", "--d": ".18s" } as React.CSSProperties}>
+          <small>02 · What PayPal says was bought</small><b>Classic Tee, Sky Blue, M</b><span>custom_id = 9f2c…e71a</span>
+        </div>
+        <div className="record" style={{ "--tilt": "-1deg", "--d": ".31s" } as React.CSSProperties}>
+          <small>03 · What arrived</small><b>A navy tee, tag M</b><span>photo shows code UNDO-7F3A</span>
+        </div>
+        <Stamp party="MERCHANT" sub="keep-it refund via PayPal" delay={1.6} />
+      </figure>
+
       <section className="card">
+        <p className="eyebrow">Try it</p>
         <label htmlFor="req"><strong>What should your agent buy?</strong></label>
         <div className="row">
           <input id="req" value={request} onChange={(e) => setRequest(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !busy && ask()} maxLength={500} />
@@ -151,14 +170,14 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
       {order && (
         <section className="card stack">
           <h2>{order.status === "AUTHORIZED" ? `Approved: your agent may spend up to $${order.ceiling}` : order.status === "COMPLETED" ? "Paid" : order.status}</h2>
-          <dl className="facts">
+          <div className="receipt-wrap"><dl className="facts receipt">
             <dt>Consent</dt><dd>{order.intent?.mode === "DELEGATED" ? "Spending limit approved on PayPal (DELEGATED)" : "Exact cart approved on PayPal (CONFIRMED)"}</dd>
             <dt>PayPal order</dt><dd><code>{order.paypalOrderId}</code></dd>
             {order.captureId && (<><dt>Capture</dt><dd><code>{order.captureId}</code> · ${order.amount}</dd></>)}
             {order.chosenItem && (<><dt>Agent bought</dt><dd>{itemName(order.chosenItem)} · ${order.chosenItem.price}{order.chosenItem.limit_violations.length ? <span className="warn"> · outside your limits ({order.chosenItem.limit_violations.join(", ")})</span> : " · inside your limits"}</dd></>)}
             {order.promisedBy && (<><dt>Promised by</dt><dd>{new Date(order.promisedBy).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</dd></>)}
             <dt>Intent hash</dt><dd><code className="hash">{order.intent?.hash}</code><br /><span className="muted">Stored in the PayPal order&apos;s custom_id, which can&apos;t change after payment.</span></dd>
-          </dl>
+          </dl></div>
           {order.status === "AUTHORIZED" && (
             <div className="row">
               <select value={agentSku} onChange={(e) => setAgentSku(e.target.value)} aria-label="Item the agent picks">
@@ -188,14 +207,21 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
         </section>
       )}
 
+      <section className="steps" aria-label="How Undo settles a claim">
+        <div><b>1</b><h3>You approve on PayPal</h3><p>The exact cart, or a spending limit. Undo hashes what you approved into the PayPal order.</p></div>
+        <div><b>2</b><h3>Something arrives wrong</h3><p>Photograph it with a one-time code. AI reads the photo; it never decides.</p></div>
+        <div><b>3</b><h3>The rules rule</h3><p>A deterministic fault engine names who&apos;s at fault. The store&apos;s policy makes the offers. PayPal moves the money.</p></div>
+      </section>
+
       <section>
-        <h2>The store</h2>
+        <div className="section-head"><h2>The store</h2><span className="eyebrow">Fernleaf Goods · fictional</span></div>
         <div className="grid">
           {products.map((p) => (
             <article key={p.id} className="product">
               <img src={productSvgDataUri(p.type, p.colors[0])} alt={`${p.name} in ${p.colors[0]}`} width={160} height={160} />
+              <span className="price-tag">${p.price}</span>
               <h3>{p.name}</h3>
-              <p className="muted">${p.price} · {p.colors.join(", ")}</p>
+              <p className="muted">{p.colors.join(", ")}</p>
               <p className="muted">{p.sizes.join(" / ")}</p>
             </article>
           ))}

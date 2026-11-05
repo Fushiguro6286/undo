@@ -16,8 +16,12 @@ const theme = themeQuartz.withParams({
   foregroundColor: "var(--ink)",
   borderColor: "var(--line)",
   accentColor: "var(--accent)",
-  headerBackgroundColor: "var(--bg)",
+  headerBackgroundColor: "var(--paper)",
+  headerFontFamily: "var(--font-mono)",
+  headerFontSize: 11,
   fontFamily: "inherit",
+  borderRadius: 0,
+  wrapperBorderRadius: 0,
 });
 
 const COLUMNS: ColDef<Claim>[] = [

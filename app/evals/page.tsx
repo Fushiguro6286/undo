@@ -36,7 +36,7 @@ export default function Page() {
     <main className="page">
       <header className="hero">
         <p className="eyebrow">Undo · measured results</p>
-        <h1>13 scenarios, decided and paid in the PayPal sandbox</h1>
+        <h1>13 scenarios, decided and paid <em>in the PayPal sandbox</em></h1>
         <p className="muted">
           Core: the deterministic fault engine, offer rules and policy evaluator on every fixture. Live: the same scenarios run on this deployment with real sandbox orders, the vision model reading the sample photos, and PayPal confirming each refund or payout.
           Results file written {new Date(r.ranAt).toUTCString()} ({r.mode} mode).
@@ -68,7 +68,7 @@ export default function Page() {
           PayPal dispute <code>{esc.disputeId}</code> on a merchant-fault claim, run against the PayPal sandbox and recorded in{" "}
           <code>evals/recordings/dispute-{esc.disputeId}.json</code>. Outcome: <strong>{esc.final?.detail?.outcome ?? "pending"}</strong>. Times in UTC; every step is on the audit chain.
         </p>
-        <ol className="small">
+        <ol className="chain">
           {esc.auditTimeline.map((e) => <li key={e.seq}><code>{hhmmss(e.at)}</code> {EVENT_TEXT[e.event] ?? e.event}</li>)}
         </ol>
       </section>
