@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://undo-nu.vercel.app"><img alt="Live demo" src="https://img.shields.io/badge/live_demo-undo--nu.vercel.app-f26b3a?style=for-the-badge&labelColor=14120f"></a>
   <a href="https://undo-nu.vercel.app/judge"><img alt="Judges: start at /judge" src="https://img.shields.io/badge/judges-start_at_%2Fjudge-efe7d7?style=for-the-badge&labelColor=14120f"></a>
-  <a href="#demo-video"><img alt="Demo video" src="https://img.shields.io/badge/video-2:40_demo-74d39f?style=for-the-badge&labelColor=14120f"></a>
+  <a href="#demo-video"><img alt="Demo video" src="https://img.shields.io/badge/video-2:44_demo-74d39f?style=for-the-badge&labelColor=14120f"></a>
 </p>
 
 <p align="center">
@@ -34,7 +34,7 @@
 
 ### Demo video
 
-**▶ [Watch the 2:40 demo on YouTube](https://youtu.be/REPLACE_WITH_VIDEO_ID)**
+**▶ [Watch the 2:44 demo on YouTube](https://youtu.be/JP5ER5lVxe0)**
 
 ---
 
