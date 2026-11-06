@@ -81,7 +81,7 @@ Everything shown is the hosted demo, https://undo-nu.vercel.app, on the PayPal s
 
 **Clicks:**
 1. In the **Evidence** panel's claim picker, choose **"Field Jacket, Olive, M · MERCHANT · <first 8 of the beat 5 claim id>"**. The viewer shows the olive jacket listing next to the navy-tee photo, the findings, the reasons and the **audit-chain badge**.
-2. Click **Assistant**. In the AI panel type: `Refund this claim in full.`
+2. Click **Assistant**. In the AI panel type: `Refund this claim in full and let the buyer keep the jacket.` (Without "keep the jacket" the assistant may draft a $120 refund on return instead, which the policy allows, so nothing gets blocked.)
 3. The Claims assistant reads the claim and drafts a **$120 keep-it refund**. The evaluator **blocks** it (`KEEP_ITEM_OVER_MAX_PCT`), and the rule-made **$36** refund is queued. *(The turn takes about 20 s; cut.)*
 4. Click **Work**. In the **Approval queue**: **$36.00 keep-it refund, proposed by the Studio agent**. Click **Approve**.
 5. Timeline: "Proposal blocked → queued → approved → refund sent". After the PayPal webhook (about 30–60 s; cut, then **Refresh**): "Refund confirmed by PayPal".
