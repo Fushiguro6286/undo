@@ -11,3 +11,20 @@ coverage/
 /scripts/spikes/out/
 .neon
 .vercel
+
+# Local working notes and one-off scripts (kept out of the public repo)
+/DEMO.md
+/PROGRESS.md
+/TASKS.md
+/AGENTS.md
+/docs/DEVPOST.md
+/docs/DESIGN-PROMPT.md
+/docs/captions.srt
+/docs/SETUP.md
+/render.yaml
+/scripts/checkpoint-a.ts
+/scripts/checkpoint-b.ts
+/scripts/day9-check.ts
+/scripts/spikes/day12-check.ts
+/scripts/make-captions.ts
+/scripts/demo-prep.ts

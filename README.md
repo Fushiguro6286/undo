@@ -283,7 +283,7 @@ Undo also exposes `POST /undo/v1/orders/{paypal_order_id}/claims`, a proposed me
 
 Needs Node.js 22+, Postgres, a PayPal developer account, and a Gemini or Anthropic API key.
 
-1. **Sandbox accounts** (by hand, at developer.paypal.com): one merchant business account and its REST app (Disputes enabled), one agent-platform business account and its REST app (Payouts enabled), and three or more personal buyer accounts. Step by step: [`docs/SETUP.md`](docs/SETUP.md).
+1. **Sandbox accounts** (by hand, at developer.paypal.com): one merchant business account and its REST app (Disputes enabled), one agent-platform business account and its REST app (Payouts enabled), and three or more personal buyer accounts. Put each app's client id and secret in `.env`.
 2. **Install and configure:**
    ```bash
    git clone https://github.com/Fushiguro6286/undo && cd undo
@@ -313,7 +313,7 @@ Checks: `npm test` (unit tests: fault engine, evaluator, offers, money-router in
 | `src/mcp/` | MCP server |
 | `src/console/` | AG Studio console, widgets, Studio agent, plain AG Grid fallback |
 | `evals/` | 13 scenario fixtures, results, recorded runs |
-| `scripts/` | Spikes, seed, order pool, dispute stock, checkpoints |
+| `scripts/` | API spikes, seed, order pool, dispute stock, smoke checks |
 
 </details>
 
