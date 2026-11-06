@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { productSvgDataUri } from "@/src/store/art";
+import { productPhoto } from "@/src/store/art";
 import { itemName, variantBySku, type Variant } from "@/src/store/catalog";
 import { Stamp } from "../../Stamp";
 
@@ -207,7 +207,7 @@ export function ClaimPage({ id }: { id: string }) {
           {a?.signals.map((s) => <p key={s} className="warn">{SIGNAL_TEXT[s] ?? s}</p>)}
           {a?.returnRequired && <p className="muted">For an order of this value, any remedy needs the item returned.</p>}
           <div className="evidence">
-            {item && <figure><img src={productSvgDataUri(item.type, item.color)} alt={`Listing: ${itemName(item)}`} /><figcaption className="muted">What you ordered</figcaption></figure>}
+            {item && <figure><img src={productPhoto(item.type, item.color)} alt={`Listing: ${itemName(item)}`} /><figcaption className="muted">What you ordered</figcaption></figure>}
             <figure><img src={latest.photoPath} alt="Your photo" /><figcaption className="muted">Your photo</figcaption></figure>
           </div>
           {v && (

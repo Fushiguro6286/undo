@@ -1,0 +1,40 @@
+Fernleaf Goods product photos
+
+Fernleaf Goods is a fictional store. Its listing photos are real photographs from Flickr and Wikimedia Commons.
+Changes made to every photo: background removed, garment recolored for each store color, placed on a plain
+background with a soft shadow. Recolored versions of BY-SA photos are shared under the same license.
+
+Classic Tee (public/products/tee-*.jpg)
+  "Ringflash Tshirt Blank Template" by geishaboy500
+  https://www.flickr.com/photos/49503154413@N01/3214240974
+  License: CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/)
+
+Trail Hoodie (public/products/hoodie-*.jpg)
+  "Sudadera urban.jpg" by Davidcanogomez
+  https://commons.wikimedia.org/wiki/File:Sudadera_urban.jpg
+  License: CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
+
+Field Jacket (public/products/jacket-*.jpg)
+  "M65 schimanski jacke.jpg" by HermannZapf
+  https://commons.wikimedia.org/wiki/File:M65_schimanski_jacke.jpg
+  License: Public domain
+
+Linen Shirt (public/products/shirt-*.jpg)
+  "NITAGUT Men Henley Neck Long Sleeve Daily Look Linen Shirts" by shop8447
+  https://www.flickr.com/photos/185514373@N06/49062043592
+  License: CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)
+
+Running Socks 3-Pack (public/products/socks-*.jpg)
+  "Björn Borg socks 3.jpg" by W.carter
+  https://commons.wikimedia.org/wiki/File:Bj%C3%B6rn_Borg_socks_3.jpg
+  License: CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)
+
+Wool Beanie (public/products/beanie-*.jpg)
+  "Wool Wasabi Green Slouch Beanie Hat" by smittenkittenorig
+  https://www.flickr.com/photos/83202873@N00/6014312491
+  License: CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/)
+
+Canvas Tote (public/products/tote-*.jpg)
+  "Upcycled Tote Bag" by DeltaNewsHub
+  https://www.flickr.com/photos/142938205@N05/28748428697
+  License: CC BY 2.0 (https://creativecommons.org/licenses/by/2.0/)

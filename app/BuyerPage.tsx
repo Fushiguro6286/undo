@@ -3,7 +3,7 @@ import Script from "next/script";
 import { useState } from "react";
 import { PayPalButton } from "./PayPalButton";
 import { Stamp } from "./Stamp";
-import { COLOR_HEX, productSvgDataUri } from "@/src/store/art";
+import { COLOR_HEX, productPhoto } from "@/src/store/art";
 import { itemName, type Product, type Variant } from "@/src/store/catalog";
 import type { Limits } from "@/src/intent/limits";
 
@@ -166,7 +166,7 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
                 {extracted.matches.map((v) => (
                   <label key={v.sku} className={`choice ${sku === v.sku ? "on" : ""}`}>
                     <input type="radio" name="sku" checked={sku === v.sku} onChange={() => setSku(v.sku)} />
-                    <img src={productSvgDataUri(v.type, v.color)} alt="" width={48} height={48} />
+                    <img src={productPhoto(v.type, v.color)} alt="" width={48} height={48} />
                     <span>{itemName(v)}<br /><span className="muted mono">${v.price}</span></span>
                   </label>
                 ))}
@@ -249,7 +249,7 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
         <div className="products">
           {shown.map((p) => (
             <article key={p.id} className="product">
-              <div className="product-art"><img src={productSvgDataUri(p.type, p.colors[0])} alt={`${p.name} in ${p.colors[0]}`} width={480} height={440} /></div>
+              <div className="product-art"><img src={productPhoto(p.type, p.colors[0])} alt={`${p.name} in ${p.colors[0]}`} width={480} height={440} /></div>
               <div className="product-meta"><h3>{p.name}</h3><span className="product-price">${p.price}</span></div>
               <p className="product-sub">
                 <span className="swatches" aria-hidden="true">{p.colors.map((c) => <i key={c} style={{ background: COLOR_HEX[c] ?? "#999" }} />)}</span>
@@ -258,6 +258,7 @@ export function BuyerPage({ products, variants }: { products: Product[]; variant
             </article>
           ))}
         </div>
+        <p className="muted small">Product photos: real photographs (CC0, public domain, CC BY, CC BY-SA), recolored for each color. <a href="/products/CREDITS.txt">Photo credits</a></p>
 
         <aside className="agent-era">
           <span className="agent-era-mark" aria-hidden="true">RULED</span>

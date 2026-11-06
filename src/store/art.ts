@@ -1,5 +1,8 @@
-// Original placeholder listing art: one flat silhouette per product type, filled with the variant color.
-// Also the "listing photo" that Day 3's photo match compares against (rasterized with sharp).
+// Listing pictures. The store shows real product photos (public/products, credits in CREDITS.txt there); the flat
+// silhouettes below are the original placeholder art, still used to draw the staged buyer sample photos and in tests.
+
+/** The real listing photo for a product type and color, e.g. /products/tee-SKYBLUE.jpg. */
+export const productPhoto = (type: string, color: string) => `/products/${type}-${color.toUpperCase().replace(/[^A-Z0-9]+/g, "")}.jpg`;
 
 export const COLOR_HEX: Record<string, string> = {
   "Sky Blue": "#7cb8e4", Navy: "#1f2f57", White: "#f4f4f1", "Heather Grey": "#a3a5a8", Forest: "#2f5d3a",
@@ -22,4 +25,3 @@ export function productSvg(type: string, color: string, size = 240): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="${size}" height="${size}"><rect width="240" height="240" fill="#efeee9"/><path d="${path}" fill="${fill}" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" fill-rule="evenodd"/></svg>`;
 }
 
-export const productSvgDataUri = (type: string, color: string) => `data:image/svg+xml;utf8,${encodeURIComponent(productSvg(type, color))}`;

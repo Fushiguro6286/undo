@@ -5,7 +5,7 @@
 import { useState, useSyncExternalStore } from "react";
 import type { ConsoleData } from "./data";
 import { ACTIONS } from "../policy/evaluator";
-import { productSvgDataUri } from "../store/art";
+import { productPhoto } from "../store/art";
 
 type Claim = ConsoleData["claims"][number];
 type Approval = ConsoleData["approvals"][number];
@@ -200,7 +200,7 @@ export function EvidenceViewer() {
       </div>
       <div className="uc-photos">
         <figure>
-          {c.item ? <img src={productSvgDataUri(c.item.type, c.item.color)} alt={`Listing photo: ${c.item.name}`} /> : <div className="uc-nophoto">No listing</div>}
+          {c.item ? <img src={productPhoto(c.item.type, c.item.color)} alt={`Listing photo: ${c.item.name}`} /> : <div className="uc-nophoto">No listing</div>}
           <figcaption className="muted">Ordered: {c.item?.name ?? "unknown"}</figcaption>
         </figure>
         <figure>

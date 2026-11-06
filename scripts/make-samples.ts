@@ -3,7 +3,7 @@
 import { mkdirSync } from "node:fs";
 import sharp from "sharp";
 import { DEMO_CHALLENGE_CODE } from "../src/claims/code";
-import { COLOR_HEX, productSvg } from "../src/store/art";
+import { COLOR_HEX, productPhoto, productSvg } from "../src/store/art";
 
 const OUT = "public/samples";
 const TEE = productSvg("tee", "Sky Blue").match(/<path d="([^"]+)"/)![1];
@@ -36,14 +36,15 @@ function scene(o: { color: string; tag: string; code: boolean; damaged?: boolean
 }
 
 async function listingWithCode() {
-  const listing = await sharp(Buffer.from(productSvg("tee", "Sky Blue"))).resize(900).png().toBuffer();
-  const note = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><g transform="translate(560 770) rotate(-3)"><rect width="320" height="100" fill="#fff" stroke="#ccc"/>
+  const listing = await sharp(`public${productPhoto("tee", "Sky Blue")}`).resize(900).png().toBuffer();
+  const note = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="825"><g transform="translate(560 700) rotate(-3)"><rect width="320" height="100" fill="#fff" stroke="#ccc"/>
     <text x="160" y="64" font-family="Segoe Print, Comic Sans MS, cursive" font-size="34" text-anchor="middle" fill="#1b2a6b">${DEMO_CHALLENGE_CODE}</text></g></svg>`;
   return sharp(listing).composite([{ input: Buffer.from(note) }]);
 }
 
 mkdirSync(OUT, { recursive: true });
-const jpg = (s: ReturnType<typeof sharp>, name: string) => s.jpeg({ quality: 86 }).toFile(`${OUT}/${name}`).then(() => console.log(`${OUT}/${name}`));
+const only = process.argv.slice(2); // optional: regenerate just these files, e.g. reused-listing.jpg
+const jpg = async (s: ReturnType<typeof sharp>, name: string) => (only.length && !only.includes(name)) || s.jpeg({ quality: 86 }).toFile(`${OUT}/${name}`).then(() => console.log(`${OUT}/${name}`));
 await jpg(sharp(Buffer.from(scene({ color: "Sky Blue", tag: "M", code: true }))), "correct-item.jpg");
 await jpg(sharp(Buffer.from(scene({ color: "Navy", tag: "M", code: true }))), "wrong-color.jpg");
 await jpg(sharp(Buffer.from(scene({ color: "Sky Blue", tag: "L", code: true }))), "wrong-size.jpg");

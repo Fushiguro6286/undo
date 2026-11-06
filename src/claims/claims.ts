@@ -10,8 +10,8 @@ import type { Limits } from "../intent/limits";
 import { getOrder } from "../intent/orders";
 import { merchant } from "../paypal/client";
 import { activePolicy } from "../policy/store";
-import { productSvg } from "../store/art";
-import { PROMISE_DAYS, PRODUCTS, variantBySku } from "../store/catalog";
+import LISTING_HASHES from "../store/listing-hashes.json";
+import { PROMISE_DAYS, variantBySku } from "../store/catalog";
 import { codeMatches, newChallengeCode } from "./code";
 import { assess, type Assessment } from "./fraud";
 import { findMatches, phash, type HashedPhoto } from "./phash";
@@ -42,12 +42,11 @@ export async function openClaim(paypalOrderId: string, type: ClaimType, descript
   return { claimId: c.id, challengeCode: c.challengeCode, uploadUrl: `${process.env.APP_BASE_URL ?? ""}/claims/${c.id}` };
 }
 
-let listingHashes: Promise<HashedPhoto[]> | undefined;
-/** One listing photo per product and color (size doesn't change the picture), rendered the same way the store shows it. */
-const listings = () =>
-  (listingHashes ??= Promise.all(
-    PRODUCTS.flatMap((p) => p.colors.map(async (color) => ({ kind: "listing" as const, ref: `${p.id}/${color}`, hash: await phash(await sharp(Buffer.from(productSvg(p.type, color))).resize(480).png().toBuffer()) }))),
-  ));
+/**
+ * One listing photo per product and color (size doesn't change the picture). Hashed ahead of time by
+ * scripts/hash-listings.ts, because files in public/ are not readable from serverless functions.
+ */
+const listings = (): HashedPhoto[] => Object.entries(LISTING_HASHES).map(([ref, hash]) => ({ kind: "listing" as const, ref, hash }));
 
 /**
  * Any earlier photo from another claim. A retake on the same claim is not a reuse. Judge-mode pool claims skip
@@ -98,7 +97,7 @@ export async function addEvidence(claimId: string, upload: Buffer) {
       console.error(`[vision] attempt ${attempt}:`, (e as Error).message); // after 2 failures: VISION_FAILED, a person reviews it
     }
   }
-  const photoMatches = findMatches(hash, [...(await listings()), ...(await earlierClaimPhotos(claimId, isJudgeSample(order)))]);
+  const photoMatches = findMatches(hash, [...listings(),...(await earlierClaimPhotos(claimId, isJudgeSample(order)))]);
   const [ev] = await db().insert(evidence).values({ claimId, photoPath: "", photo: jpeg, phash: hash, visionResult: vision, fraudSignals: { photoMatches } }).returning({ id: evidence.id });
   await db().update(evidence).set({ photoPath: `/api/evidence/${ev.id}/photo` }).where(eq(evidence.id, ev.id));
   await audit(claimId, "EVIDENCE_ADDED", { evidenceId: ev.id, phash: hash, vision, photoMatches });

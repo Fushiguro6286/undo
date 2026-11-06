@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
+import { readFileSync } from "node:fs";
+import { listingHashes } from "../../scripts/hash-listings";
+import LISTING_HASHES from "../store/listing-hashes.json";
 import { codeMatches, DEMO_CHALLENGE_CODE, newChallengeCode } from "./code";
 import { assess, type AssessInput } from "./fraud";
 import { findMatches, hamming, phash, PHASH_MATCH_THRESHOLD } from "./phash";
@@ -89,5 +92,20 @@ describe("fraud checks", () => {
 describe("default policy", () => {
   it("is valid against the schema", () => {
     expect(Policy.parse(DEFAULT_POLICY)).toEqual(DEFAULT_POLICY);
+  });
+});
+
+describe("listing photos", () => {
+  const listings = () => Object.entries(LISTING_HASHES).map(([ref, hash]) => ({ kind: "listing" as const, ref, hash }));
+  const upload = async (f: string) => phash(await sharp(readFileSync(`public/samples/${f}`)).resize(1280, 1280, { fit: "inside" }).jpeg({ quality: 82 }).toBuffer());
+
+  it("the stored hashes are up to date with public/products", async () => {
+    expect(await listingHashes()).toEqual(LISTING_HASHES);
+  });
+  it("the reused-listing sample matches the Sky Blue tee listing", async () => {
+    expect(findMatches(await upload("reused-listing.jpg"), listings()).map((m) => m.ref)).toContain("TEE/Sky Blue");
+  });
+  it("honest buyer samples match no listing photo", async () => {
+    for (const f of ["correct-item.jpg", "wrong-color.jpg", "wrong-size.jpg", "damaged.jpg", "no-code.jpg"]) expect(findMatches(await upload(f), listings())).toEqual([]);
   });
 });
